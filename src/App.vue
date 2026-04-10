@@ -15,34 +15,6 @@
       <template v-if="activeTab === 0">
         <OnboardingWidget />
 
-        <div class="hero-widgets">
-          <div class="widget-card widget-cv">
-            <span class="widget-label">Recommended</span>
-            <h2 class="widget-title">Get matched!</h2>
-            <p class="widget-text">Upload your resume and see jobs that match your skills and experience</p>
-            <div class="mt-auto">
-              <Button label="Search with CV" severity="primary" style="width: 100%" />
-            </div>
-          </div>
-
-        <div class="widget-card widget-fit">
-          <div class="fit-content">
-            <h2 class="widget-title">Find your fit with us!</h2>
-            <p class="widget-text">Take a short survey about your experience, interests, and preferences to unlock more personalized job recommendations. It's a quick alternative to uploading your CV.</p>
-
-            <div class="checklist">
-              <div class="check-item"><i class="pi pi-check-circle"></i> Share your preferred role types</div>
-              <div class="check-item"><i class="pi pi-check-circle"></i> Highlight your strengths and interests</div>
-              <div class="check-item"><i class="pi pi-check-circle"></i> Set location and work-style preferences</div>
-              <div class="check-item"><i class="pi pi-check-circle"></i> Get smarter role recommendations</div>
-            </div>
-          </div>
-          <div class="fit-actions">
-            <Button label="Take the survey" icon="pi pi-arrow-right" severity="secondary" outlined />
-          </div>
-        </div>
-        </div>
-
         <template v-if="!isEmptyState">
           <section class="dashboard-section">
             <div class="section-header">
@@ -50,7 +22,7 @@
                 <h2>Saved Jobs</h2>
                 <p class="subtitle">Jobs you've bookmarked for later</p>
               </div>
-              <a href="#" class="view-all-link" @click.prevent="activeTab = 2">View All <i class="pi pi-arrow-right"></i></a>
+              <a href="#" class="view-all-link" @click.prevent="activeTab = 3">View All <i class="pi pi-arrow-right"></i></a>
             </div>
             <div class="cards-grid-3">
               <JobCard
@@ -67,12 +39,14 @@
                 <h2>Upcoming Interviews</h2>
                 <p class="subtitle">Prepare for your scheduled interviews</p>
               </div>
-              <a href="#" class="view-all-link">View All <i class="pi pi-arrow-right"></i></a>
+              <a href="#" class="view-all-link" @click.prevent="activeTab = 2">View All <i class="pi pi-arrow-right"></i></a>
             </div>
             <div class="cards-list-vertical">
-              <InterviewCard title="Product Manager" status="not_started" />
-              <InterviewCard title="Product Manager" status="accepted" format="New York, NY Office" />
-              <InterviewCard title="Product Manager" status="in_progress" />
+              <InterviewCard
+                v-for="interview in interviews.slice(0, 3)"
+                :key="`${interview.title}-${interview.date}-${interview.time}`"
+                v-bind="interview"
+              />
             </div>
           </section>
 
@@ -86,20 +60,89 @@
             </div>
             <div class="cards-grid-3">
               <ApplicationCard
-                title="Senior Product Designer"
-                team="Experience Design"
-                department="Product Design"
-                status="interview"
-                description="Your portfolio stood out for systems thinking and craft. Pick your interview slot to continue."
-                next-step="Choose your preferred interview slot before Friday, 6:00 PM."
+                v-for="application in dashboardApplications"
+                :key="application.title"
+                v-bind="application"
+                :show-highlight="false"
               />
-              <ApplicationCard
-                title="Product Systems Designer"
-                team="Design Systems"
-                department="Product Design"
-                status="in_review"
-                description="The hiring team is reviewing your application and your most recent case study."
-              />
+            </div>
+          </section>
+
+          <section class="dashboard-section">
+            <div class="hero-widgets">
+              <div class="widget-card widget-cv">
+                <span class="widget-label">Recommended</span>
+                <h2 class="widget-title">Get matched!</h2>
+                <p class="widget-text">Upload your resume and see jobs that match your skills and experience.</p>
+                <div class="mt-auto">
+                  <Button label="Search with CV" severity="primary" style="width: 100%" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="dashboard-section">
+            <div class="section-header">
+              <div class="title-area">
+                <h2>Recommended Events</h2>
+                <p class="subtitle">Career events curated for you</p>
+              </div>
+              <a href="#" class="view-all-link">View All <i class="pi pi-arrow-right"></i></a>
+            </div>
+            <div class="events-list">
+              <div class="event-card">
+                <div class="event-image">
+                  <img src="/tech_career_fair.png" alt="Tech Career Fair 2028" />
+                </div>
+                <div class="event-content">
+                  <div class="event-header">
+                    <div class="event-title-group">
+                      <h3 class="event-title ds-title-card">Tech Career Fair 2028</h3>
+                      <div class="event-tags">
+                        <span class="event-tag ds-chip-text">Conference</span>
+                        <span class="event-tag ds-chip-text">In person</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="event-description ds-body">Connect with top tech companies and explore exciting career opportunities.</p>
+                  <div class="event-details event-details-inline">
+                    <InfoChip icon="pi pi-calendar" label="Mar 15, 2026, 10:00 AM EST" />
+                    <InfoChip icon="pi pi-map-marker" label="Toronto, Canada" />
+                    <InfoChip icon="pi pi-users" label="150 attendees" />
+                  </div>
+                  <div class="event-actions">
+                    <Button label="Learn More" severity="secondary" outlined />
+                    <Button label="Register Now" severity="primary" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="event-card">
+                <div class="event-image">
+                  <img src="/workshop_event.png" alt="Product Management Workshop" />
+                </div>
+                <div class="event-content">
+                  <div class="event-header">
+                    <div class="event-title-group">
+                      <h3 class="event-title ds-title-card">Product Management Workshop</h3>
+                      <div class="event-tags">
+                        <span class="event-tag ds-chip-text">Workshop</span>
+                        <span class="event-tag ds-chip-text">Small group</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="event-description ds-body">Learn essential PM skills from industry leaders and network with peers</p>
+                  <div class="event-details event-details-inline">
+                    <InfoChip icon="pi pi-calendar" label="Mar 20, 2026, 10:00 AM EST" />
+                    <InfoChip icon="pi pi-map-marker" label="Toronto, Canada" />
+                    <InfoChip icon="pi pi-users" label="24 attendees" />
+                  </div>
+                  <div class="event-actions">
+                    <Button label="Learn More" severity="secondary" outlined />
+                    <Button label="Register Now" severity="primary" />
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
         </template>
@@ -129,152 +172,28 @@
             </div>
           </div>
         </div>
-
-        <section class="dashboard-section">
-          <div class="section-header">
-            <div class="title-area">
-              <h2>Recommended Events</h2>
-              <p class="subtitle">Career events curated for you</p>
-            </div>
-            <a href="#" class="view-all-link">View All <i class="pi pi-arrow-right"></i></a>
-          </div>
-          <div class="events-list">
-            <div class="event-card">
-              <div class="event-image">
-                <img src="/tech_career_fair.png" alt="Tech Career Fair 2028" />
-              </div>
-              <div class="event-content">
-                <div class="event-header">
-                  <div class="event-title-group">
-                    <h3 class="event-title ds-title-card">Tech Career Fair 2028</h3>
-                    <div class="event-tags">
-                      <span class="event-tag ds-chip-text">Conference</span>
-                      <span class="event-tag ds-chip-text">In person</span>
-                    </div>
-                  </div>
-                </div>
-                <p class="event-description ds-body">Connect with top tech companies and explore exciting career opportunities.</p>
-                <div class="event-details event-details-inline">
-                  <InfoChip icon="pi pi-calendar" label="Mar 15, 2026, 10:00 AM EST" />
-                  <InfoChip icon="pi pi-map-marker" label="Toronto, Canada" />
-                  <InfoChip icon="pi pi-users" label="150 attendees" />
-                </div>
-                <div class="event-actions">
-                  <Button label="Learn More" severity="secondary" outlined />
-                  <Button label="Register Now" severity="primary" />
-                </div>
-              </div>
-            </div>
-
-            <div class="event-card">
-              <div class="event-image">
-                <img src="/workshop_event.png" alt="Product Management Workshop" />
-              </div>
-              <div class="event-content">
-                <div class="event-header">
-                  <div class="event-title-group">
-                    <h3 class="event-title ds-title-card">Product Management Workshop</h3>
-                    <div class="event-tags">
-                      <span class="event-tag ds-chip-text">Workshop</span>
-                      <span class="event-tag ds-chip-text">Small group</span>
-                    </div>
-                  </div>
-                </div>
-                <p class="event-description ds-body">Learn essential PM skills from industry leaders and network with peers</p>
-                <div class="event-details event-details-inline">
-                  <InfoChip icon="pi pi-calendar" label="Mar 20, 2026, 10:00 AM EST" />
-                  <InfoChip icon="pi pi-map-marker" label="Toronto, Canada" />
-                  <InfoChip icon="pi pi-users" label="24 attendees" />
-                </div>
-                <div class="event-actions">
-                  <Button label="Learn More" severity="secondary" outlined />
-                  <Button label="Register Now" severity="primary" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
       </template>
 
       <template v-else-if="activeTab === 1">
         <SectionHero
           eyebrow="Applications"
           title="Keep track of the roles you've already applied to"
-          subtitle="Review your current applications, see what stage each one is in, and take the next step when the hiring team needs something from you."
+          subtitle="Review your current applications and open the role details whenever you want a closer look."
         />
 
-        <section class="application-stats-grid">
-          <div class="stat-card stat-card-primary">
-            <div class="stat-topline">
-              <span class="stat-label">Active Applications</span>
-              <span class="stat-pill">2 open</span>
-            </div>
-            <div class="stat-main">
-              <strong class="stat-value">2</strong>
-              <p class="stat-copy">Roles still moving through review or interview stages.</p>
-            </div>
-            <div class="stat-footer">
-              <span class="stat-trend positive">1 updated today</span>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-topline">
-              <span class="stat-label">Needs Action</span>
-              <span class="stat-icon"><i class="pi pi-bolt"></i></span>
-            </div>
-            <div class="stat-main">
-              <strong class="stat-value">1</strong>
-              <p class="stat-copy">One application is waiting on your response right now.</p>
-            </div>
-            <div class="stat-footer">
-              <span class="stat-trend">Interview scheduling due soon</span>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-topline">
-              <span class="stat-label">Latest Stage</span>
-              <span class="stat-icon"><i class="pi pi-flag"></i></span>
-            </div>
-            <div class="stat-main">
-              <strong class="stat-value">Interview</strong>
-              <p class="stat-copy">Your farthest application has moved into the interview stage.</p>
-            </div>
-            <div class="stat-footer">
-              <span class="stat-trend positive">Good progress this week</span>
-            </div>
-          </div>
-        </section>
-
         <section class="dashboard-section">
           <div class="section-header">
             <div class="title-area">
-              <h2>Needs Your Attention</h2>
-              <p class="subtitle">Applications that currently need a response from you</p>
+              <h2>Active Applications</h2>
+              <p class="subtitle">Applications still moving through pre-interview stages</p>
             </div>
           </div>
           <div class="cards-grid-2 compact-grid">
             <ApplicationCard
-              v-for="application in attentionApplications"
+              v-for="application in activeApplications"
               :key="application.title"
               v-bind="application"
-            />
-          </div>
-        </section>
-
-        <section class="dashboard-section">
-          <div class="section-header">
-            <div class="title-area">
-              <h2>In Progress</h2>
-              <p class="subtitle">Applications still being reviewed by the hiring team</p>
-            </div>
-          </div>
-          <div class="cards-grid-2 compact-grid">
-            <ApplicationCard
-              v-for="application in inProgressApplications"
-              :key="application.title"
-              v-bind="application"
+              :show-highlight="false"
             />
           </div>
         </section>
@@ -291,44 +210,42 @@
               v-for="application in closedApplications"
               :key="application.title"
               v-bind="application"
+              :show-highlight="false"
             />
-          </div>
-        </section>
-
-        <section class="applications-guidance">
-          <div class="guidance-card">
-            <span class="widget-label">Recommendations</span>
-            <h2 class="guidance-title">A few simple ways to stay on top of your applications</h2>
-            <ul class="guidance-list">
-              <li>Follow up 7 to 10 days after applying if the role is still open and you have not received an update.</li>
-              <li>For interview-stage roles, confirm your availability quickly so you do not lose momentum in the process.</li>
-              <li>Before each interview, review the job description again and prepare two or three examples that match the role.</li>
-              <li>Keep short notes on each application so it is easier to tailor follow-ups and remember what each team cares about.</li>
-              <li>If a role closes, request feedback politely and use it to improve the next application you send.</li>
-            </ul>
           </div>
         </section>
       </template>
 
       <template v-else-if="activeTab === 2">
         <SectionHero
+          eyebrow="Interviews"
+          title="Every upcoming interview in one place"
+          subtitle="Review unscheduled and scheduled interviews, then open the details when you are ready to prepare."
+        />
+
+        <section class="dashboard-section">
+          <div class="section-header">
+            <div class="title-area">
+              <h2>Upcoming Interviews</h2>
+              <p class="subtitle">Scheduled sessions and interviews that still need a time</p>
+            </div>
+          </div>
+          <div class="cards-list-vertical">
+            <InterviewCard
+              v-for="interview in interviews"
+              :key="`${interview.title}-${interview.date}-${interview.time}`"
+              v-bind="interview"
+            />
+          </div>
+        </section>
+      </template>
+
+      <template v-else-if="activeTab === 3">
+        <SectionHero
           eyebrow="Saved Jobs"
           title="Your bookmarked roles, all in one place"
           subtitle="Compare the roles you've saved, revisit the job details, and apply whenever you're ready."
         />
-
-        <section class="saved-jobs-summary">
-          <div class="saved-summary-card">
-            <span class="stat-label">Saved Roles</span>
-            <strong class="saved-summary-value">{{ savedJobs.length }}</strong>
-            <p class="stat-copy">A short list of roles you wanted to come back to before applying.</p>
-          </div>
-          <div class="saved-summary-card">
-            <span class="stat-label">Top Area</span>
-            <strong class="saved-summary-value">Design</strong>
-            <p class="stat-copy">Most of your saved roles are in product and design-related teams.</p>
-          </div>
-        </section>
 
         <section class="dashboard-section">
           <div class="section-header">
@@ -347,15 +264,15 @@
         </section>
       </template>
 
-      <template v-else-if="activeTab === 3">
+      <template v-else-if="activeTab === 4">
         <ProfileInfoView />
       </template>
 
-      <template v-else-if="activeTab === 4">
+      <template v-else-if="activeTab === 5">
         <JobAlertsView />
       </template>
 
-      <template v-else-if="activeTab === 5">
+      <template v-else-if="activeTab === 6">
         <AccountSettingsView />
       </template>
 
@@ -364,7 +281,7 @@
           <div class="placeholder-card">
             <span class="widget-label">Coming Next</span>
             <h2 class="placeholder-title">{{ tabItems[activeTab].label }}</h2>
-            <p class="placeholder-text">This section has not been built yet. The Dashboard and Applications experiences are ready to explore in the current prototype.</p>
+            <p class="placeholder-text">This section has not been built yet. The Dashboard, Applications, and Interviews experiences are ready to explore in the current prototype.</p>
             <Button label="Back to Dashboard" icon="pi pi-arrow-left" severity="secondary" outlined @click="activeTab = 0" />
           </div>
         </section>
@@ -396,12 +313,12 @@ import ProfileInfoView from './components/ProfileInfoView.vue';
 import JobAlertsView from './components/JobAlertsView.vue';
 import AccountSettingsView from './components/AccountSettingsView.vue';
 import SectionHero from './components/SectionHero.vue';
-import Tag from 'primevue/tag';
 import Button from 'primevue/button';
 
 const tabItems = ref([
   { label: 'Dashboard', icon: '' },
-  { label: 'Applications', icon: '', badge: 4 },
+  { label: 'Applications', icon: '', badge: 3 },
+  { label: 'Interviews', icon: '', badge: 3 },
   { label: 'Saved Jobs', icon: '', badge: 4 },
   { label: 'Profile information', icon: '' },
   { label: 'Job Alerts', icon: '', badge: 2 },
@@ -443,34 +360,63 @@ const savedJobs = [
   }
 ];
 
-const attentionApplications = [
+const interviews = [
+  {
+    title: 'Product Manager',
+    status: 'not_started',
+    description: 'Intro conversation with recruiting to confirm your background, motivations, and role fit.',
+    date: 'To be scheduled',
+    time: '30 min',
+    format: 'Google Meet',
+    avatarLabel: 'R'
+  },
+  {
+    title: 'Senior Product Designer',
+    status: 'accepted',
+    description: 'Portfolio review with the hiring manager focused on systems thinking and execution quality.',
+    date: 'Apr 15, 2026',
+    time: '1:30 PM EET',
+    format: 'Remote video',
+    avatarLabel: 'A'
+  },
+  {
+    title: 'Product Systems Designer',
+    status: 'in_progress',
+    description: 'Panel interview with design and engineering partners to walk through collaboration examples.',
+    date: 'Apr 18, 2026',
+    time: '4:00 PM EET',
+    format: 'New York, NY Office',
+    avatarLabel: 'D'
+  }
+];
+
+const activeApplications = [
   {
     title: 'Senior Product Designer',
     team: 'Experience Design',
     department: 'Product Design',
     appliedDate: 'Mar 16, 2026',
-    lastUpdated: 'Interview invite received today',
-    status: 'interview',
-    description: 'The hiring manager wants to meet this week. Lock in a timeslot and review the role brief.',
-    nextStep: 'Pick one of the three interview slots before 5:00 PM.',
+    lastUpdated: 'Updated today',
+    status: 'in_review',
+    description: 'Lead product design across complex user journeys and turn research into polished, scalable experiences.',
+    nextStep: 'No action needed yet. We will share the next step as soon as review is complete.',
     location: 'Remote, US',
     jobId: 'R-10291'
-  }
-];
-
-const inProgressApplications = [
+  },
   {
     title: 'Product Systems Designer',
     team: 'Design Systems',
     department: 'Product Design',
     appliedDate: 'Mar 14, 2026',
     lastUpdated: 'Updated 1 day ago',
-    status: 'in_review',
-    description: 'Recruiting is reviewing your design systems case study and collaborator feedback.',
+    status: 'submitted',
+    description: 'Shape the future of the design system and partner with product teams to raise quality across the platform.',
     location: 'Remote, Europe',
     jobId: 'R-21980'
   }
 ];
+
+const dashboardApplications = activeApplications.slice(0, 2);
 
 const closedApplications = [
   {
@@ -480,8 +426,7 @@ const closedApplications = [
     appliedDate: 'Feb 09, 2026',
     lastUpdated: 'Closed 3 days ago',
     status: 'rejected',
-    description: 'The team moved forward with another candidate, but your background was a close match.',
-    nextStep: 'Request recruiter feedback or explore similar roles on nearby teams.',
+    description: 'Drive content-focused product design work that improves clarity, usability, and trust across core journeys.',
     location: 'Remote, US',
     jobId: 'R-45002'
   }
@@ -542,7 +487,7 @@ const onTabChange = (event) => {
   bottom: 24px;
   left: 24px;
   z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border-radius: 999px;
 }
 
@@ -607,7 +552,8 @@ const onTabChange = (event) => {
 }
 
 .hero-widgets {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
 }
 
@@ -621,7 +567,7 @@ const onTabChange = (event) => {
 }
 
 .widget-cv {
-  flex: 1;
+  min-height: 220px;
   border: 1px solid transparent;
   background: linear-gradient(var(--bg-default), var(--bg-default)) padding-box,
               linear-gradient(135deg, #ff914d, #b983ff) border-box;
@@ -646,46 +592,6 @@ const onTabChange = (event) => {
   color: var(--text-default);
   line-height: 24px;
   margin: 0 0 24px 0;
-}
-
-.widget-fit {
-  flex: 2;
-  flex-direction: row;
-  justify-content: space-between;
-  gap: 24px;
-}
-
-.fit-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.checklist {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-top: 16px;
-}
-
-.check-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  color: var(--text-subtle);
-}
-
-.check-item i {
-  color: var(--text-subtle);
-  font-size: 18px;
-}
-
-.fit-actions {
-  display: flex;
-  align-items: flex-end;
-  flex-shrink: 0;
-  min-width: 180px;
 }
 
 .mt-auto {
@@ -748,86 +654,10 @@ const onTabChange = (event) => {
   gap: 24px;
 }
 
-.saved-jobs-summary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.saved-summary-card {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 20px;
-  border-radius: 14px;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-default);
-}
-
-.saved-summary-value {
-  font-size: 32px;
-  line-height: 1;
-  color: var(--text-strong);
-}
-
 .saved-jobs-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
-}
-
-.applications-guidance {
-  display: flex;
-}
-
-.guidance-card {
-  width: 100%;
-  padding: 24px 28px;
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  background-color: var(--bg-default);
-}
-
-.guidance-title {
-  margin: 0 0 16px;
-  font-size: 24px;
-  line-height: 1.2;
-  color: var(--text-strong);
-}
-
-.guidance-list {
-  margin: 0;
-  padding-left: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  color: var(--text-default);
-  font-size: 15px;
-  line-height: 24px;
-}
-
-.application-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.stat-card {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 20px;
-  border-radius: 14px;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-default);
-}
-
-.stat-topline,
-.stat-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
 }
 
 .stat-label {
@@ -835,49 +665,6 @@ const onTabChange = (event) => {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-subtle);
-}
-
-.stat-pill,
-.stat-icon,
-.stat-trend {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background-color: #f6f8fb;
-  border: 1px solid var(--border-color);
-  font-size: 12px;
-  color: var(--text-strong);
-}
-
-.stat-icon {
-  width: 28px;
-  padding: 0;
-}
-
-.stat-main {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.stat-value {
-  font-size: 34px;
-  line-height: 1;
-  color: var(--text-strong);
-}
-
-.stat-copy {
-  margin: 0;
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--text-default);
-}
-
-.stat-trend.positive {
-  color: var(--text-strong);
 }
 
 .placeholder-section {
@@ -1025,10 +812,7 @@ const onTabChange = (event) => {
   gap: 10px;
 }
 
-.event-title {
-  margin: 0;
-}
-
+.event-title,
 .event-description {
   margin: 0;
 }
@@ -1060,9 +844,6 @@ const onTabChange = (event) => {
   border-radius: 999px;
   background-color: #f6f8fb;
   border: 1px solid var(--border-color);
-}
-
-.event-tag {
   color: var(--text-strong);
 }
 
@@ -1085,23 +866,12 @@ const onTabChange = (event) => {
 }
 
 @media (max-width: 1024px) {
-  .hero-widgets {
-    flex-direction: column;
-  }
-
-  .widget-fit {
-    flex-direction: column;
-    gap: 24px;
-  }
-
   .main-content {
     padding: 24px 40px;
   }
 
   .cards-grid-3,
   .cards-grid-2,
-  .application-stats-grid,
-  .saved-jobs-summary,
   .saved-jobs-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1120,8 +890,6 @@ const onTabChange = (event) => {
 
   .cards-grid-3,
   .cards-grid-2,
-  .application-stats-grid,
-  .saved-jobs-summary,
   .saved-jobs-grid {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -1164,10 +932,6 @@ const onTabChange = (event) => {
     flex-direction: column;
   }
 
-  .checklist {
-    grid-template-columns: 1fr;
-  }
-
   .widget-card {
     padding: 20px;
   }
@@ -1179,16 +943,6 @@ const onTabChange = (event) => {
   .title-area .subtitle {
     font-size: 14px;
     margin-top: 4px;
-  }
-
-  .fit-actions {
-    width: 100%;
-    margin-top: 24px;
-  }
-
-  .fit-actions :deep(.p-button) {
-    width: 100%;
-    justify-content: center;
   }
 
   .placeholder-card {

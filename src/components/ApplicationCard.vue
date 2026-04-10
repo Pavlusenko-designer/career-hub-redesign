@@ -8,7 +8,7 @@
       </div>
       <div class="header-actions">
         <Tag :value="statusConfig.label" :class="['status-tag', statusClass]" />
-        <Button icon="pi pi-ellipsis-v" text rounded severity="secondary" @click="toggleMenu" class="more-btn" />
+        <Button icon="pi pi-ellipsis-v" text rounded severity="secondary" class="menu-btn" @click="toggleMenu" />
         <Menu ref="menu" :model="menuItems" :popup="true" />
       </div>
     </div>
@@ -22,7 +22,7 @@
 
       <p class="job-description ds-body">{{ description }}</p>
 
-      <div class="application-highlight">
+      <div v-if="showHighlight" class="application-highlight">
         <i :class="statusConfig.highlightIcon"></i>
         <span>{{ nextStepText }}</span>
       </div>
@@ -30,52 +30,20 @@
 
     <div class="card-footer">
       <Button
-        v-if="statusConfig.secondaryAction"
-        :label="statusConfig.secondaryAction.label"
-        :icon="statusConfig.secondaryAction.icon"
-        severity="secondary"
-        outlined
-        class="action-btn"
-      />
-      <Button
-        :label="statusConfig.primaryAction.label"
-        :icon="statusConfig.primaryAction.icon"
+        label="View Details"
+        icon="pi pi-arrow-right"
         severity="primary"
         class="action-btn"
       />
     </div>
-
-    <Dialog v-model:visible="showWithdrawModal" modal :style="{ width: '32rem', borderRadius: '12px' }" :closable="true">
-      <template #header>
-        <div class="modal-header">
-          <i class="pi pi-exclamation-triangle" style="color: #d32f2f; font-size: 20px;"></i>
-          <span class="modal-title">Application withdrawal</span>
-        </div>
-      </template>
-
-      <div class="modal-content">
-        <p>
-          Are you sure you want to withdraw your application for the <strong>{{ title }}</strong> position?
-        </p>
-        <p>
-          Withdrawing your application will remove it from consideration for this role. This action cannot be undone.
-        </p>
-      </div>
-
-      <div class="modal-actions">
-        <Button label="Withdraw application" severity="primary" class="w-full" @click="showWithdrawModal = false" />
-        <Button label="Cancel" severity="secondary" text class="w-full" @click="showWithdrawModal = false" style="font-weight: 600" />
-      </div>
-    </Dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import Menu from 'primevue/menu';
-import Dialog from 'primevue/dialog';
 import InfoChip from './InfoChip.vue';
 
 const props = defineProps({
@@ -101,15 +69,19 @@ const props = defineProps({
   },
   status: {
     type: String,
-    default: 'interview'
+    default: 'in_review'
   },
   description: {
     type: String,
-    default: 'Some position description goes here Some position description goes here Some position description goes here Some position description goes here Some position description goes here'
+    default: 'Some position description goes here Some position description goes here Some position description goes here.'
   },
   nextStep: {
     type: String,
     default: ''
+  },
+  showHighlight: {
+    type: Boolean,
+    default: true
   },
   location: {
     type: String,
@@ -125,86 +97,61 @@ const STATUS_CONFIG = {
   submitted: {
     label: 'Submitted',
     highlightIcon: 'pi pi-send',
-    defaultNextStep: 'Your application was received. We will email you once it moves into review.',
-    primaryAction: { label: 'View Application', icon: 'pi pi-file' },
-    secondaryAction: { label: 'Edit Answers', icon: 'pi pi-pencil' }
+    defaultNextStep: 'Your application was received and is waiting for the hiring team to begin review.'
   },
   in_review: {
     label: 'In Review',
     highlightIcon: 'pi pi-search',
-    defaultNextStep: 'Hiring team is reviewing your portfolio and role alignment.',
-    primaryAction: { label: 'View Details', icon: 'pi pi-arrow-right' },
-    secondaryAction: { label: 'Send Follow-Up', icon: 'pi pi-envelope' }
+    defaultNextStep: 'Hiring team is reviewing your portfolio and role alignment.'
   },
   assessment: {
     label: 'Assessment',
     highlightIcon: 'pi pi-bolt',
-    defaultNextStep: 'Complete the take-home exercise before the deadline to stay in process.',
-    primaryAction: { label: 'Start Assessment', icon: 'pi pi-play' },
-    secondaryAction: { label: 'View Brief', icon: 'pi pi-book' }
+    defaultNextStep: 'Complete the take-home exercise before the deadline to stay in process.'
   },
   interview: {
     label: 'Interview',
     highlightIcon: 'pi pi-calendar',
-    defaultNextStep: 'Choose a time slot and confirm your interview details.',
-    primaryAction: { label: 'Schedule Interview', icon: 'pi pi-calendar-plus' },
-    secondaryAction: { label: 'View Prep', icon: 'pi pi-directions' }
+    defaultNextStep: 'Choose a time slot and confirm your interview details.'
   },
   final_round: {
     label: 'Final Round',
     highlightIcon: 'pi pi-star',
-    defaultNextStep: 'Your final panel is ready. Review the agenda and interviewer notes.',
-    primaryAction: { label: 'Review Panel', icon: 'pi pi-users' },
-    secondaryAction: { label: 'Join Briefing', icon: 'pi pi-video' }
+    defaultNextStep: 'Your final panel is ready. Review the agenda and interviewer notes.'
   },
   offer: {
     label: 'Offer',
     highlightIcon: 'pi pi-check-circle',
-    defaultNextStep: 'An offer is ready for review. Confirm compensation and benefits before signing.',
-    primaryAction: { label: 'Review Offer', icon: 'pi pi-file-edit' },
-    secondaryAction: { label: 'Compare Benefits', icon: 'pi pi-chart-line' }
+    defaultNextStep: 'An offer is ready for review. Confirm compensation and benefits before signing.'
   },
   rejected: {
     label: 'Closed',
     highlightIcon: 'pi pi-lock',
-    defaultNextStep: 'This role is closed, but you can request feedback and stay ready for future openings.',
-    primaryAction: { label: 'Request Feedback', icon: 'pi pi-comment' },
-    secondaryAction: { label: 'View Similar Teams', icon: 'pi pi-search' }
+    defaultNextStep: 'This role is closed, but you can still review the application details and history.'
   }
 };
+
+const menu = ref(null);
 
 const statusConfig = computed(() => STATUS_CONFIG[props.status] || STATUS_CONFIG.in_review);
 const statusClass = computed(() => `status-${props.status}`);
 const nextStepText = computed(() => props.nextStep || statusConfig.value.defaultNextStep);
-const metaLabel = computed(() => `Applied on ${props.appliedDate} · ${props.lastUpdated}`);
+const metaLabel = computed(() => props.lastUpdated);
 
-const menu = ref(null);
-const showWithdrawModal = ref(false);
+const menuItems = computed(() => [
+  {
+    label: 'Edit application',
+    icon: 'pi pi-pencil'
+  },
+  {
+    label: 'Withdraw application',
+    icon: 'pi pi-ban'
+  }
+]);
 
 const toggleMenu = (event) => {
-  menu.value.toggle(event);
+  menu.value?.toggle(event);
 };
-
-const menuItems = computed(() => {
-  const items = [
-    {
-      label: 'View application',
-      icon: 'pi pi-file'
-    }
-  ];
-
-  if (props.status !== 'rejected' && props.status !== 'offer') {
-    items.push({
-      label: 'Withdraw application',
-      icon: 'pi pi-ban',
-      command: () => {
-        showWithdrawModal.value = true;
-      }
-    });
-  }
-
-  return items;
-});
 </script>
 
 <style scoped>
@@ -238,20 +185,14 @@ const menuItems = computed(() => {
   gap: 6px;
 }
 
-.more-btn {
-  width: 32px;
-  height: 32px;
+.menu-btn {
+  width: 2rem;
+  height: 2rem;
   padding: 0;
 }
 
-.job-title {
-  margin: 0;
-}
-
-.job-team {
-  margin: 0;
-}
-
+.job-title,
+.job-team,
 .applied-date {
   margin: 0;
 }
@@ -311,45 +252,15 @@ const menuItems = computed(() => {
 
 .card-footer {
   margin-top: auto;
-  display: flex;
-  gap: 8px;
 }
 
 .action-btn {
+  width: 100%;
   border-radius: 10px;
   padding: 8px 12px;
   font-weight: 500;
   font-size: 13px;
-  flex: 1;
   justify-content: center;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-strong);
-}
-
-.modal-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
-  font-size: 16px;
-  color: var(--text-default);
-  line-height: 24px;
-}
-
-.modal-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
 
 @media (max-width: 768px) {
@@ -365,14 +276,6 @@ const menuItems = computed(() => {
 
   .header-actions {
     justify-content: space-between;
-  }
-
-  .card-footer {
-    flex-direction: column;
-  }
-
-  .action-btn {
-    width: 100%;
   }
 }
 </style>

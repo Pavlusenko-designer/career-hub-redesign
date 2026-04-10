@@ -23,11 +23,8 @@ defineProps({
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 32px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background-color: #f6f8fb;
-  border: 1px solid var(--border-color);
+  min-height: 20px;
+  padding: 0;
   color: var(--text-strong);
 }
 

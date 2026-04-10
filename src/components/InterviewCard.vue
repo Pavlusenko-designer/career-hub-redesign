@@ -1,13 +1,12 @@
 <template>
   <div class="interview-card">
+    <Tag :value="statusLabel" :class="['status-tag', statusClass]" />
+
     <div class="card-content">
-      <div class="header-row">
-        <h3 class="job-title ds-title-card">{{ title }}</h3>
-        <Tag :value="statusLabel" :class="['status-tag', statusClass]" />
-      </div>
-      
+      <h3 class="job-title ds-title-card">{{ title }}</h3>
+
       <p class="job-description ds-body">{{ description }}</p>
-      
+
       <div class="details-row">
         <div class="detail-item">
           <i class="pi pi-calendar"></i>
@@ -29,10 +28,10 @@
         </div>
       </div>
     </div>
-    
+
     <div class="actions-container">
-      <Button v-if="primaryActionText" :label="primaryActionText" class="p-button-secondary action-btn" :icon="primaryActionIcon" />
-      <Button label="View Details" class="p-button-primary action-btn view-details-btn" />
+      <Button label="View Details" class="p-button-secondary action-btn" outlined />
+      <Button v-if="primaryActionText" :label="primaryActionText" class="p-button-primary action-btn view-details-btn" :icon="primaryActionIcon" />
     </div>
   </div>
 </template>
@@ -50,11 +49,11 @@ const props = defineProps({
   },
   status: {
     type: String,
-    default: 'not_started' // 'not_started', 'accepted', 'in_progress'
+    default: 'not_started'
   },
   description: {
     type: String,
-    default: 'Some position description goes here Some position description goes here Some position description goes here Some position description goes here Some position description goes here Some position description goes here Some position description goes here'
+    default: 'Some position description goes here Some position description goes here Some position description goes here Some position description goes here.'
   },
   date: {
     type: String,
@@ -75,45 +74,47 @@ const props = defineProps({
 });
 
 const statusLabel = computed(() => {
-  switch(props.status) {
-    case 'accepted': return 'Accepted';
-    case 'in_progress': return 'In Progress';
-    case 'not_started': default: return 'Not Started';
+  switch (props.status) {
+    case 'accepted': return 'Scheduled';
+    case 'in_progress': return 'Confirmed';
+    case 'not_started':
+    default: return 'Needs Scheduling';
   }
 });
 
-const statusClass = computed(() => {
-  return `status-${props.status}`;
-});
+const statusClass = computed(() => `status-${props.status}`);
 
 const formatIcon = computed(() => {
-  return props.format.toLowerCase().includes('google') || props.format.toLowerCase().includes('video') 
-    ? 'pi pi-video' 
+  return props.format.toLowerCase().includes('google') || props.format.toLowerCase().includes('video')
+    ? 'pi pi-video'
     : 'pi pi-map-marker';
 });
 
 const primaryActionText = computed(() => {
-  switch(props.status) {
+  switch (props.status) {
     case 'accepted': return 'Reschedule';
     case 'in_progress': return 'Join Call';
-    case 'not_started': default: return 'Schedule';
+    case 'not_started':
+    default: return 'Schedule';
   }
 });
 
 const primaryActionIcon = computed(() => {
-  switch(props.status) {
+  switch (props.status) {
     case 'accepted': return 'pi pi-calendar-plus';
     case 'in_progress': return 'pi pi-video';
-    case 'not_started': default: return 'pi pi-calendar-plus';
+    case 'not_started':
+    default: return 'pi pi-calendar-plus';
   }
 });
 </script>
 
 <style scoped>
 .interview-card {
+  position: relative;
   background-color: var(--bg-default);
   border: 1px solid var(--border-color);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 24px;
   display: flex;
   justify-content: space-between;
@@ -125,16 +126,10 @@ const primaryActionIcon = computed(() => {
 .card-content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   flex-grow: 1;
-}
-
-.header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
+  min-width: 0;
+  padding-right: 132px;
 }
 
 .job-title {
@@ -142,15 +137,19 @@ const primaryActionIcon = computed(() => {
 }
 
 .status-tag {
-  border-radius: 6px;
-  padding: 4px 6px;
-  font-size: 14px;
-  font-weight: 400;
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
 }
 
-.status-not_started { background-color: #e8eaee; color: #353b46; }
-.status-accepted { background-color: #d8f4f2; color: #1d3734; }
-.status-in_progress { background-color: #eae8fb; color: #2927b2; }
+.status-not_started { background-color: #eef1f5; color: #445066; }
+.status-accepted { background-color: #dff6f1; color: #1d4c45; }
+.status-in_progress { background-color: #e8edff; color: #3149a6; }
 
 .job-description {
   display: -webkit-box;
@@ -165,13 +164,13 @@ const primaryActionIcon = computed(() => {
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 .detail-item {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-size: 12px;
   color: var(--text-subtle);
 }
@@ -181,10 +180,10 @@ const primaryActionIcon = computed(() => {
 }
 
 .time-badge {
-  background-color: #e8eaee;
-  border-radius: 6px;
-  padding: 3px 6px;
-  color: #353b46;
+  background-color: #eef1f5;
+  border-radius: 999px;
+  padding: 4px 8px;
+  color: #445066;
 }
 
 .separator {
@@ -198,8 +197,8 @@ const primaryActionIcon = computed(() => {
 }
 
 .attendee-avatar {
-  background-color: #eae8fb;
-  color: #464f5e;
+  background-color: #e8edff;
+  color: #445066;
   width: 24px;
   height: 24px;
   font-size: 12px;
@@ -213,7 +212,7 @@ const primaryActionIcon = computed(() => {
   align-items: center;
   justify-content: flex-end;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
@@ -237,9 +236,13 @@ const primaryActionIcon = computed(() => {
     gap: 16px;
   }
 
-  .header-row {
-    align-items: flex-start;
-    gap: 12px;
+  .card-content {
+    padding-right: 0;
+  }
+
+  .status-tag {
+    position: static;
+    align-self: flex-start;
   }
 
   .job-title {

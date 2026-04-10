@@ -61,11 +61,28 @@
                     id="phone-code"
                     v-model="contactDraft.phoneCode"
                     :options="countryCodeOptions"
-                    optionLabel="label"
-                    optionValue="value"
+                    optionLabel="searchLabel"
+                    optionValue="dialCode"
+                    placeholder="Code"
+                    filter
+                    filterPlaceholder="Search countries..."
                     class="phone-code"
-                  />
-                  <InputMask id="phone" v-model="contactDraft.phone" mask="999 999 9999" placeholder="000 000 0000" class="phone-input" />
+                  >
+                    <template #value="{ value, placeholder }">
+                      <div v-if="value" class="phone-option phone-option-selected">
+                        <span class="phone-flag">{{ getCountryByDialCode(value)?.flag }}</span>
+                        <span>{{ value }}</span>
+                      </div>
+                      <span v-else>{{ placeholder }}</span>
+                    </template>
+                    <template #option="{ option }">
+                      <div class="phone-option">
+                        <span class="phone-flag">{{ option.flag }}</span>
+                        <span>{{ option.name }} ({{ option.dialCode }})</span>
+                      </div>
+                    </template>
+                  </Dropdown>
+                  <InputMask id="phone" v-model="contactDraft.phone" mask="999 999 9999" placeholder="066 623 3552" class="phone-input" />
                 </div>
               </div>
             </div>
@@ -182,6 +199,89 @@
           </div>
         </div>
       </TabPanel>
+
+      <TabPanel header="Pilot Credentials">
+        <div class="panel-stack">
+          <section class="form-card pilot-credentials-card">
+            <div class="card-heading">
+              <h2>Pilot Flight Hours</h2>
+              <p>Add and maintain your recent aircraft hours using the same profile workflow as the rest of this section.</p>
+            </div>
+
+            <div class="pilot-table">
+              <div class="pilot-table-head">
+                <div class="pilot-head-cell">Aircraft type</div>
+                <div class="pilot-head-cell">Date Last Flown</div>
+                <div class="pilot-head-cell">Total Fixed-Wing Turbine Time (In Hrs)</div>
+                <div class="pilot-head-cell">Fixed-Wing Turbine Time in last 60 Months (In Hrs)</div>
+                <div class="pilot-head-cell">Total Fixed-Wing PIC Turbine Time (In Hrs)</div>
+                <div class="pilot-head-cell">Total Fixed-Wing SIC Turbine Time (In Hrs)</div>
+                <div class="pilot-head-cell pilot-head-cell-actions"></div>
+              </div>
+
+              <div
+                v-for="(row, index) in pilotCredentialsDraft"
+                :key="row.id"
+                class="pilot-table-row"
+              >
+                <div class="pilot-cell">
+                  <Dropdown
+                    v-model="row.aircraftType"
+                    :options="aircraftOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Type"
+                    class="pilot-field"
+                  />
+                </div>
+                <div class="pilot-cell">
+                  <Calendar
+                    v-model="row.dateLastFlown"
+                    dateFormat="mm/dd/yy"
+                    placeholder="mm/dd/yyyy"
+                    showIcon
+                    iconDisplay="input"
+                    class="pilot-field"
+                  />
+                </div>
+                <div class="pilot-cell">
+                  <InputText v-model="row.totalFixedWingTurbineTime" class="pilot-field" />
+                </div>
+                <div class="pilot-cell">
+                  <InputText v-model="row.fixedWingTurbineLast60Months" class="pilot-field" />
+                </div>
+                <div class="pilot-cell">
+                  <InputText v-model="row.totalPicTurbineTime" class="pilot-field" />
+                </div>
+                <div class="pilot-cell">
+                  <InputText v-model="row.totalSicTurbineTime" class="pilot-field" />
+                </div>
+                <div class="pilot-cell pilot-cell-actions">
+                  <Button
+                    icon="pi pi-trash"
+                    text
+                    rounded
+                    severity="secondary"
+                    class="pilot-delete-btn"
+                    :disabled="pilotCredentialsDraft.length === 1"
+                    @click="removePilotCredentialRow(index)"
+                  />
+                </div>
+              </div>
+
+              <button type="button" class="pilot-add-row" @click="addPilotCredentialRow">
+                <i class="pi pi-plus"></i>
+                <span>Add Aircraft</span>
+              </button>
+            </div>
+
+            <div class="actions-row pilot-actions-row">
+              <Button label="Discard Changes" severity="secondary" outlined @click="resetPilotCredentials" />
+              <Button label="Submit" severity="primary" class="pilot-submit-btn" @click="savePilotCredentials" />
+            </div>
+          </section>
+        </div>
+      </TabPanel>
     </TabView>
   </section>
 </template>
@@ -193,6 +293,7 @@ import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
 import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
+import Calendar from 'primevue/calendar';
 import InputMask from 'primevue/inputmask';
 import Checkbox from 'primevue/checkbox';
 import Chips from 'primevue/chips';
@@ -210,10 +311,14 @@ const genderOptions = [
 ];
 
 const countryCodeOptions = [
-  { label: '+38', value: '+38' },
-  { label: '+1', value: '+1' },
-  { label: '+44', value: '+44' },
-  { label: '+49', value: '+49' }
+  { name: 'Ukraine', flag: '🇺🇦', dialCode: '+380', searchLabel: 'Ukraine +380' },
+  { name: 'Cook Islands', flag: '🇨🇰', dialCode: '+682', searchLabel: 'Cook Islands +682' },
+  { name: 'Costa Rica', flag: '🇨🇷', dialCode: '+506', searchLabel: 'Costa Rica +506' },
+  { name: "Cote d'Ivoire", flag: '🇨🇮', dialCode: '+225', searchLabel: "Cote d'Ivoire +225" },
+  { name: 'Croatia', flag: '🇭🇷', dialCode: '+385', searchLabel: 'Croatia +385' },
+  { name: 'United States', flag: '🇺🇸', dialCode: '+1', searchLabel: 'United States +1' },
+  { name: 'United Kingdom', flag: '🇬🇧', dialCode: '+44', searchLabel: 'United Kingdom +44' },
+  { name: 'Germany', flag: '🇩🇪', dialCode: '+49', searchLabel: 'Germany +49' }
 ];
 
 const experienceOptions = [
@@ -223,13 +328,21 @@ const experienceOptions = [
   { label: '15+ years', value: '15_plus' }
 ];
 
+const aircraftOptions = [
+  { label: 'A310', value: 'A310' },
+  { label: 'A320', value: 'A320' },
+  { label: 'A330', value: 'A330' },
+  { label: 'A311', value: 'A311' },
+  { label: 'B737', value: 'B737' }
+];
+
 const contactInitial = {
   firstName: 'Alex',
   lastName: 'Morgan',
   middleName: '',
   gender: null,
   email: 'alex.morgan@example.com',
-  phoneCode: '+38',
+  phoneCode: '+380',
   phone: '067 555 1234'
 };
 
@@ -248,6 +361,22 @@ const preferencesInitial = {
   startingCareer: false
 };
 
+const createPilotCredentialRow = (id, aircraftType = 'A310') => ({
+  id,
+  aircraftType,
+  dateLastFlown: null,
+  totalFixedWingTurbineTime: '0',
+  fixedWingTurbineLast60Months: '0',
+  totalPicTurbineTime: '0',
+  totalSicTurbineTime: '0'
+});
+
+const pilotCredentialsInitial = [
+  createPilotCredentialRow(1, 'A310'),
+  createPilotCredentialRow(2, 'A310'),
+  createPilotCredentialRow(3, 'A310')
+];
+
 const contactSaved = ref(clone(contactInitial));
 const contactDraft = ref(clone(contactInitial));
 
@@ -257,8 +386,14 @@ const resumeDraft = ref(clone(resumeInitial));
 const preferencesSaved = ref(clone(preferencesInitial));
 const preferencesDraft = ref(clone(preferencesInitial));
 
+const pilotCredentialsSaved = ref(clone(pilotCredentialsInitial));
+const pilotCredentialsDraft = ref(clone(pilotCredentialsInitial));
+
 const resumeInput = ref(null);
 const resumeMenu = ref(null);
+const nextPilotCredentialId = ref(pilotCredentialsInitial.length + 1);
+
+const getCountryByDialCode = (dialCode) => countryCodeOptions.find((option) => option.dialCode === dialCode);
 
 const resetContact = () => {
   contactDraft.value = clone(contactSaved.value);
@@ -282,6 +417,23 @@ const resetPreferences = () => {
 
 const savePreferences = () => {
   preferencesSaved.value = clone(preferencesDraft.value);
+};
+
+const addPilotCredentialRow = () => {
+  pilotCredentialsDraft.value.push(createPilotCredentialRow(nextPilotCredentialId.value++, ''));
+};
+
+const removePilotCredentialRow = (index) => {
+  if (pilotCredentialsDraft.value.length === 1) return;
+  pilotCredentialsDraft.value.splice(index, 1);
+};
+
+const savePilotCredentials = () => {
+  pilotCredentialsSaved.value = clone(pilotCredentialsDraft.value);
+};
+
+const resetPilotCredentials = () => {
+  pilotCredentialsDraft.value = clone(pilotCredentialsSaved.value);
 };
 
 const openResumePicker = () => {
@@ -413,7 +565,6 @@ const resumeMenuItems = [
 
 .phone-row {
   display: flex;
-  gap: 12px;
   align-items: stretch;
   border: 1px solid var(--border-color);
   border-radius: 10px;
@@ -422,11 +573,28 @@ const resumeMenuItems = [
 }
 
 .phone-code {
-  flex: 0 0 116px;
+  flex: 0 0 140px;
 }
 
 .phone-input {
   flex: 1;
+}
+
+.phone-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 24px;
+}
+
+.phone-option-selected {
+  font-size: 14px;
+  color: var(--text-strong);
+}
+
+.phone-flag {
+  font-size: 16px;
+  line-height: 1;
 }
 
 .phone-row :deep(.p-dropdown),
@@ -440,6 +608,28 @@ const resumeMenuItems = [
 .phone-row :deep(.p-dropdown) {
   border-right: 1px solid var(--border-color) !important;
   background-color: #f9fbfd;
+}
+
+.phone-row :deep(.p-dropdown .p-dropdown-label) {
+  display: flex;
+  align-items: center;
+  padding: 0.875rem 0.75rem;
+}
+
+.phone-row :deep(.p-dropdown-panel .p-dropdown-items) {
+  padding: 0.35rem 0;
+}
+
+.phone-row :deep(.p-dropdown-panel .p-dropdown-item) {
+  padding: 0.7rem 0.85rem;
+}
+
+.phone-row :deep(.p-dropdown-panel .p-dropdown-header) {
+  padding: 0.7rem;
+}
+
+.phone-row :deep(.p-dropdown-filter) {
+  width: 100%;
 }
 
 .phone-row :deep(.p-dropdown:not(.p-disabled):hover),
@@ -477,11 +667,147 @@ const resumeMenuItems = [
   margin-top: 2px;
 }
 
+.profile-page :deep(.p-tabview-panels .field label) {
+  padding-top: 6px;
+}
+
 .actions-row {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   padding-top: 4px;
+}
+
+.pilot-credentials-card {
+  border-color: var(--border-color);
+}
+
+.pilot-table {
+  border: 1px solid #d1d5dc;
+  background-color: #fff;
+}
+
+.pilot-table-head,
+.pilot-table-row {
+  display: grid;
+  grid-template-columns: 1.05fr 1.1fr 1.05fr 1.15fr 1.1fr 1.1fr 72px;
+}
+
+.pilot-head-cell {
+  padding: 16px 12px;
+  border-right: 1px solid #d1d5dc;
+  border-bottom: 1px solid #d1d5dc;
+  background-color: #f4f6fa;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0.25px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.pilot-head-cell:last-child,
+.pilot-cell:last-child {
+  border-right: none;
+}
+
+.pilot-table-row {
+  background-color: #f8f9fb;
+}
+
+.pilot-cell {
+  padding: 14px 12px;
+  border-right: 1px solid #d1d5dc;
+  border-bottom: 1px solid #d1d5dc;
+}
+
+.pilot-cell-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pilot-field {
+  width: 100%;
+}
+
+.pilot-table :deep(.p-inputtext),
+.pilot-table :deep(.p-dropdown),
+.pilot-table :deep(.p-calendar),
+.pilot-table :deep(.p-calendar .p-inputtext) {
+  width: 100%;
+}
+
+.pilot-table :deep(.p-inputtext),
+.pilot-table :deep(.p-dropdown .p-dropdown-label),
+.pilot-table :deep(.p-calendar .p-inputtext) {
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0.25px;
+  color: #637085;
+}
+
+.pilot-table :deep(.p-inputtext),
+.pilot-table :deep(.p-dropdown),
+.pilot-table :deep(.p-calendar .p-inputtext) {
+  border-color: #d1d5dc;
+  border-radius: 10px;
+  min-height: 40px;
+  background-color: #fff;
+  box-shadow: none;
+}
+
+.pilot-table :deep(.p-dropdown .p-dropdown-label),
+.pilot-table :deep(.p-calendar .p-inputtext),
+.pilot-table :deep(.p-inputtext) {
+  padding: 8px 16px;
+}
+
+.pilot-table :deep(.p-calendar .p-datepicker-trigger) {
+  width: 40px;
+  border-left: 1px solid #d1d5dc;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  background-color: #fff;
+  color: #8c95a8;
+}
+
+.pilot-delete-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #d1d5dc;
+  border-radius: 999px;
+  color: #8c95a8;
+}
+
+.pilot-add-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 20px 40px;
+  border: none;
+  border-top: 0;
+  background: #fff;
+  color: #111b40;
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.pilot-add-row i {
+  color: #155eef;
+  font-size: 18px;
+}
+
+.pilot-actions-row {
+  padding-top: 28px;
+}
+
+.pilot-submit-btn {
+  min-width: 140px;
 }
 
 .resume-file-card {
@@ -608,6 +934,11 @@ const resumeMenuItems = [
   .form-grid-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .pilot-table-head,
+  .pilot-table-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 768px) {
@@ -633,6 +964,20 @@ const resumeMenuItems = [
   .actions-row {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .pilot-table {
+    overflow-x: auto;
+  }
+
+  .pilot-table-head,
+  .pilot-table-row {
+    min-width: 980px;
+    grid-template-columns: 150px 140px 150px 150px 150px 150px 72px;
+  }
+
+  .pilot-submit-btn {
+    width: 100%;
   }
 
   .actions-row :deep(.p-button),
