@@ -1012,18 +1012,18 @@ const resumeMenuItems = [
 }
 
 .availability-title-row h2 {
-  margin: 0;
-  font-size: 18px;
-  line-height: 1.25;
+  margin: 0 0 4px;
+  font-size: 20px;
+  line-height: var(--type-title-section-line);
   font-weight: 600;
-  color: #2f2d2d;
+  color: var(--text-strong);
 }
 
 .availability-header p {
   margin: 0;
-  font-size: 18px;
-  line-height: 1.25;
-  color: #2f2d2d;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--text-subtle);
 }
 
 .availability-section {
@@ -1039,11 +1039,10 @@ const resumeMenuItems = [
 
 .availability-label,
 .availability-field label {
-  font-size: 14px;
+  font-size: 13px;
   line-height: 20px;
   font-weight: 500;
-  letter-spacing: 0.3px;
-  color: #464f5e;
+  color: var(--text-strong);
 }
 
 .availability-field {
@@ -1059,8 +1058,7 @@ const resumeMenuItems = [
 .availability-field small {
   font-size: 12px;
   line-height: 16px;
-  letter-spacing: 0.4px;
-  color: #637085;
+  color: var(--text-subtle);
 }
 
 .availability-select-row {
@@ -1112,15 +1110,14 @@ const resumeMenuItems = [
   background: #fff;
   font-size: 14px;
   line-height: 24px;
-  letter-spacing: 0.3px;
-  color: #464f5e;
+  color: #637085;
   box-shadow: none;
 }
 
 .availability-shell :deep(.availability-select .p-button:not(.p-highlight):hover) {
   border-color: #8c95a8;
   background: #fff;
-  color: #464f5e;
+  color: #637085;
 }
 
 .availability-shell :deep(.availability-select .p-button.p-highlight) {
@@ -1147,10 +1144,9 @@ const resumeMenuItems = [
 
 .availability-shell :deep(.p-dropdown .p-dropdown-label) {
   padding: 10px 12px;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: 0.3px;
-  color: #637085;
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--text-subtle);
 }
 
 .availability-shell :deep(.p-dropdown .p-dropdown-trigger) {
@@ -1175,8 +1171,7 @@ const resumeMenuItems = [
   box-shadow: none;
   font-size: 14px;
   line-height: 20px;
-  letter-spacing: 0.3px;
-  color: #464f5e;
+  color: var(--text-strong);
 }
 
 .availability-shell :deep(.availability-native-number.p-inputtext::placeholder) {
