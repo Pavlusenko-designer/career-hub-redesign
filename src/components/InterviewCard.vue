@@ -156,6 +156,7 @@ const primaryActionIcon = computed(() => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  min-height: calc(24px * 2);
   margin: 0;
 }
 

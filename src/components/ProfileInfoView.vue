@@ -200,6 +200,174 @@
         </div>
       </TabPanel>
 
+      <TabPanel header="Availability">
+        <div class="panel-stack">
+          <section class="availability-shell">
+            <div class="availability-card">
+              <div class="availability-content">
+                <div class="availability-header">
+                  <div class="availability-title-row">
+                    <h2>My Availability</h2>
+                  </div>
+                  <p>Keep your availability up-to-date to get matched with the best jobs.</p>
+                </div>
+
+                <div class="availability-section">
+                  <label class="availability-label">Which months are you available to work?</label>
+                  <SelectButton
+                    v-model="availabilityDraft.months"
+                    :options="monthOptions"
+                    multiple
+                    unselectable
+                    class="availability-select availability-select-months"
+                  />
+                </div>
+
+                <div class="availability-divider"></div>
+
+                <div class="availability-section availability-section-compact">
+                  <div class="availability-field availability-field-short">
+                    <label for="days-per-week">How many days of the week are you available?</label>
+                    <InputText
+                      id="days-per-week"
+                      :model-value="availabilityDraft.daysPerWeek"
+                      type="number"
+                      min="0"
+                      max="7"
+                      step="1"
+                      inputmode="numeric"
+                      placeholder="0"
+                      class="availability-native-number availability-field-short"
+                      @update:model-value="availabilityDraft.daysPerWeek = normalizeNumberInput($event, 0, 7)"
+                    />
+                    <small>Max. 7 days per week</small>
+                  </div>
+                </div>
+
+                <div class="availability-section availability-section-days">
+                  <label class="availability-label">Select days of the week you are available</label>
+                  <div class="availability-select-row availability-select-row-split">
+                    <SelectButton
+                      v-model="availabilityDraft.days"
+                      :options="fullWeekPrimary"
+                      multiple
+                      unselectable
+                      class="availability-select availability-select-days availability-select-4"
+                    />
+                    <span class="availability-inline-divider" aria-hidden="true"></span>
+                    <SelectButton
+                      v-model="availabilityDraft.days"
+                      :options="fullWeekWeekend"
+                      multiple
+                      unselectable
+                      class="availability-select availability-select-days availability-select-3"
+                    />
+                  </div>
+                </div>
+
+                <div class="availability-divider"></div>
+
+                <div class="availability-section availability-section-days">
+                  <label class="availability-label">Select weekdays you are available</label>
+                  <SelectButton
+                    v-model="availabilityDraft.weekdays"
+                    :options="weekdayOptions"
+                    multiple
+                    unselectable
+                    class="availability-select availability-select-days availability-select-4"
+                  />
+                </div>
+
+                <div class="availability-divider"></div>
+
+                <div class="availability-section availability-section-compact">
+                  <div class="availability-field availability-field-short">
+                    <label for="weekend-days">How many weekends are you available? (Friday-Sunday)</label>
+                    <InputText
+                      id="weekend-days"
+                      :model-value="availabilityDraft.weekendDaysCount"
+                      type="number"
+                      min="0"
+                      max="3"
+                      step="1"
+                      inputmode="numeric"
+                      placeholder="0"
+                      class="availability-native-number availability-field-short"
+                      @update:model-value="availabilityDraft.weekendDaysCount = normalizeNumberInput($event, 0, 3)"
+                    />
+                    <small>Max. 3 weekend days</small>
+                  </div>
+                </div>
+
+                <div class="availability-section availability-section-days">
+                  <label class="availability-label">Select weekend days you are available</label>
+                  <SelectButton
+                    v-model="availabilityDraft.weekendDays"
+                    :options="weekendOptions"
+                    multiple
+                    unselectable
+                    class="availability-select availability-select-days availability-select-3"
+                  />
+                </div>
+
+                <div class="availability-divider"></div>
+
+                <div class="availability-section availability-section-compact">
+                  <div class="availability-field">
+                    <label for="hours-per-week">How many hours a week are you willing to work?</label>
+                    <InputText
+                      id="hours-per-week"
+                      :model-value="availabilityDraft.hoursPerWeek"
+                      type="number"
+                      min="0"
+                      max="60"
+                      step="1"
+                      inputmode="numeric"
+                      placeholder="0"
+                      class="availability-native-number availability-native-number-wide"
+                      @update:model-value="availabilityDraft.hoursPerWeek = normalizeNumberInput($event, 0, 60)"
+                    />
+                    <small>Max. 60 hours per week</small>
+                  </div>
+                </div>
+
+                <div class="availability-divider"></div>
+
+                <div class="availability-section">
+                  <label class="availability-label">Are you available to work on public holidays?</label>
+                  <div class="availability-radio-row">
+                    <div class="availability-radio-item">
+                      <RadioButton v-model="availabilityDraft.publicHolidays" inputId="public-holidays-yes" name="publicHolidays" :value="true" />
+                      <label for="public-holidays-yes">Yes</label>
+                    </div>
+                    <div class="availability-radio-item">
+                      <RadioButton v-model="availabilityDraft.publicHolidays" inputId="public-holidays-no" name="publicHolidays" :value="false" />
+                      <label for="public-holidays-no">No</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="availability-footer">
+              <Button
+                label="Clear Availability"
+                icon="pi pi-trash"
+                severity="secondary"
+                outlined
+                class="availability-clear-btn"
+                @click="clearAvailability"
+              />
+
+              <div class="availability-footer-actions">
+                <Button label="Discard Changes" severity="secondary" outlined @click="resetAvailability" />
+                <Button label="Save" severity="primary" @click="saveAvailability" />
+              </div>
+            </div>
+          </section>
+        </div>
+      </TabPanel>
+
       <TabPanel header="Pilot Credentials">
         <div class="panel-stack">
           <section class="form-card pilot-credentials-card">
@@ -287,7 +455,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import Button from 'primevue/button';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
@@ -298,10 +466,31 @@ import InputMask from 'primevue/inputmask';
 import Checkbox from 'primevue/checkbox';
 import Chips from 'primevue/chips';
 import Menu from 'primevue/menu';
+import RadioButton from 'primevue/radiobutton';
 import SelectButton from 'primevue/selectbutton';
 import SectionHero from './SectionHero.vue';
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
+
+const monthOptions = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'December',
+  'November'
+];
+
+const fullWeekPrimary = ['Mon', 'Tue', 'Wed', 'Thu'];
+const fullWeekWeekend = ['Fri', 'Sat', 'Sun'];
+const weekdayOptions = ['Mon', 'Tue', 'Wed', 'Thu'];
+const weekendOptions = ['Fri', 'Sat', 'Sun'];
 
 const genderOptions = [
   { label: 'Male', value: 'male' },
@@ -361,6 +550,17 @@ const preferencesInitial = {
   startingCareer: false
 };
 
+const availabilityInitial = {
+  months: ['March', 'April', 'May', 'June', 'September', 'October'],
+  daysPerWeek: null,
+  days: ['Tue', 'Thu', 'Fri'],
+  weekdays: ['Tue'],
+  weekendDaysCount: null,
+  weekendDays: ['Sun'],
+  hoursPerWeek: null,
+  publicHolidays: false
+};
+
 const createPilotCredentialRow = (id, aircraftType = 'A310') => ({
   id,
   aircraftType,
@@ -385,6 +585,9 @@ const resumeDraft = ref(clone(resumeInitial));
 
 const preferencesSaved = ref(clone(preferencesInitial));
 const preferencesDraft = ref(clone(preferencesInitial));
+
+const availabilitySaved = ref(clone(availabilityInitial));
+const availabilityDraft = ref(clone(availabilityInitial));
 
 const pilotCredentialsSaved = ref(clone(pilotCredentialsInitial));
 const pilotCredentialsDraft = ref(clone(pilotCredentialsInitial));
@@ -418,6 +621,103 @@ const resetPreferences = () => {
 const savePreferences = () => {
   preferencesSaved.value = clone(preferencesDraft.value);
 };
+
+const resetAvailability = () => {
+  availabilityDraft.value = clone(availabilitySaved.value);
+};
+
+const saveAvailability = () => {
+  availabilitySaved.value = clone(availabilityDraft.value);
+};
+
+const clearAvailability = () => {
+  availabilityDraft.value = {
+    months: [],
+    daysPerWeek: null,
+    days: [],
+    weekdays: [],
+    weekendDaysCount: null,
+    weekendDays: [],
+    hoursPerWeek: null,
+    publicHolidays: null
+  };
+};
+
+const toggleAvailabilityItem = (collection, item) => {
+  const index = collection.indexOf(item);
+
+  if (index >= 0) {
+    collection.splice(index, 1);
+    return;
+  }
+
+  collection.push(item);
+};
+
+const toggleLimitedSelection = (collection, item, limit) => {
+  const index = collection.indexOf(item);
+
+  if (index >= 0) {
+    collection.splice(index, 1);
+    return;
+  }
+
+  if (limit && collection.length >= limit) return;
+  collection.push(item);
+};
+
+const normalizeNumberInput = (value, min, max) => {
+  if (value === '' || value === null || value === undefined) return null;
+
+  const parsed = Number(value);
+  if (Number.isNaN(parsed)) return null;
+
+  return Math.min(max, Math.max(min, Math.trunc(parsed)));
+};
+
+const trimCollectionToLimit = (collection, limit) => {
+  if (limit == null) return;
+  if (limit <= 0) {
+    collection.splice(0, collection.length);
+    return;
+  }
+
+  if (collection.length > limit) {
+    collection.splice(limit);
+  }
+};
+
+watch(
+  () => availabilityDraft.value.daysPerWeek,
+  (limit) => {
+    trimCollectionToLimit(availabilityDraft.value.days, limit);
+  }
+);
+
+watch(
+  () => [...availabilityDraft.value.days],
+  (selection) => {
+    const limit = availabilityDraft.value.daysPerWeek;
+    if (limit == null || selection.length <= limit) return;
+    availabilityDraft.value.days = selection.slice(0, limit);
+  }
+);
+
+watch(
+  () => availabilityDraft.value.weekendDaysCount,
+  (limit) => {
+    trimCollectionToLimit(availabilityDraft.value.weekendDays, limit);
+  }
+);
+
+watch(
+  () => [...availabilityDraft.value.weekendDays],
+  (selection) => {
+    const limit = availabilityDraft.value.weekendDaysCount;
+    if (limit == null || selection.length <= limit) return;
+    availabilityDraft.value.weekendDays = selection.slice(0, limit);
+  }
+);
 
 const addPilotCredentialRow = () => {
   pilotCredentialsDraft.value.push(createPilotCredentialRow(nextPilotCredentialId.value++, ''));
@@ -678,6 +978,284 @@ const resumeMenuItems = [
   padding-top: 4px;
 }
 
+.availability-shell {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.availability-card {
+  padding: 32px;
+  background: #fff;
+}
+
+.availability-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.availability-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.availability-title-row {
+  display: flex;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.availability-title-row h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 600;
+  color: #2f2d2d;
+}
+
+.availability-header p {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+  color: #2f2d2d;
+}
+
+.availability-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.availability-section-compact,
+.availability-section-days {
+  gap: 8px;
+}
+
+.availability-label,
+.availability-field label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  color: #464f5e;
+}
+
+.availability-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.availability-field-short {
+  max-width: 280px;
+}
+
+.availability-field small {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.4px;
+  color: #637085;
+}
+
+.availability-select-row {
+  display: grid;
+  gap: 8px;
+}
+
+.availability-select-row-split {
+  grid-template-columns: minmax(0, 4fr) 16px minmax(0, 3fr);
+  align-items: center;
+}
+
+.availability-inline-divider {
+  display: block;
+  width: 1px;
+  height: 32px;
+  justify-self: center;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.availability-select {
+  width: 100%;
+}
+
+.availability-shell :deep(.availability-select.p-selectbutton) {
+  display: grid;
+  gap: 8px;
+}
+
+.availability-shell :deep(.availability-select-months.p-selectbutton) {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.availability-shell :deep(.availability-select-4.p-selectbutton) {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.availability-shell :deep(.availability-select-3.p-selectbutton) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.availability-shell :deep(.availability-select .p-button) {
+  justify-content: center;
+  min-height: 32px;
+  margin: 0;
+  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0.3px;
+  color: #464f5e;
+  box-shadow: none;
+}
+
+.availability-shell :deep(.availability-select .p-button:not(.p-highlight):hover) {
+  border-color: #8c95a8;
+  background: #fff;
+  color: #464f5e;
+}
+
+.availability-shell :deep(.availability-select .p-button.p-highlight) {
+  border-color: var(--primary-bg);
+  background: rgba(60, 109, 104, 0.08);
+  color: var(--text-strong);
+}
+
+.availability-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.availability-dropdown {
+  width: 100%;
+}
+
+.availability-shell :deep(.p-dropdown) {
+  border-color: #8c95a8;
+  border-radius: 10px;
+  min-height: 42px;
+  box-shadow: none;
+}
+
+.availability-shell :deep(.p-dropdown .p-dropdown-label) {
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.3px;
+  color: #637085;
+}
+
+.availability-shell :deep(.p-dropdown .p-dropdown-trigger) {
+  width: 2.5rem;
+  color: #637085;
+}
+
+.availability-native-number {
+  width: 100%;
+}
+
+.availability-native-number-wide {
+  max-width: none;
+}
+
+.availability-shell :deep(.availability-native-number.p-inputtext) {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #8c95a8;
+  border-radius: 10px;
+  box-shadow: none;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.3px;
+  color: #464f5e;
+}
+
+.availability-shell :deep(.availability-native-number.p-inputtext::placeholder) {
+  color: #637085;
+}
+
+.availability-radio-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.availability-radio-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.availability-radio-item label {
+  font-size: 14px;
+  line-height: 24px;
+  color: var(--text-strong);
+  cursor: pointer;
+}
+
+.availability-shell :deep(.p-radiobutton .p-radiobutton-box) {
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+  border-color: #8c95a8;
+  box-shadow: none;
+}
+
+.availability-shell :deep(.p-radiobutton .p-radiobutton-box.p-highlight) {
+  border-color: var(--primary-bg);
+  background: #fff;
+}
+
+.availability-shell :deep(.p-radiobutton .p-radiobutton-box .p-radiobutton-icon) {
+  background-color: var(--primary-bg);
+  width: 8px;
+  height: 8px;
+}
+
+.availability-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+  background: #fcfcfc;
+  box-shadow: 0 4px 6px rgba(69, 69, 69, 0.1);
+}
+
+.availability-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.availability-footer :deep(.p-button) {
+  min-height: 44px;
+  border-radius: 999px;
+  padding: 10px 20px;
+}
+
+.availability-footer :deep(.p-button.p-button-outlined),
+.availability-footer :deep(.p-button.p-button-secondary) {
+  border-color: #bdbdbd;
+  color: #777;
+}
+
+.availability-footer :deep(.p-button.p-button-primary) {
+  border-color: #bdbdbd !important;
+  background: #f2f2f2 !important;
+  color: #777 !important;
+}
+
 .pilot-credentials-card {
   border-color: var(--border-color);
 }
@@ -935,6 +1513,23 @@ const resumeMenuItems = [
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .availability-shell :deep(.availability-select-months.p-selectbutton) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .availability-shell :deep(.availability-select-4.p-selectbutton),
+  .availability-shell :deep(.availability-select-3.p-selectbutton) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .availability-select-row-split {
+    grid-template-columns: 1fr;
+  }
+
+  .availability-inline-divider {
+    display: none;
+  }
+
   .pilot-table-head,
   .pilot-table-row {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -942,12 +1537,20 @@ const resumeMenuItems = [
 }
 
 @media (max-width: 768px) {
-  .form-card {
+  .form-card,
+  .availability-card {
     padding: 20px;
   }
 
   .form-grid-4,
-  .form-grid-2 {
+  .form-grid-2,
+  .availability-select-row-split {
+    grid-template-columns: 1fr;
+  }
+
+  .availability-shell :deep(.availability-select-months.p-selectbutton),
+  .availability-shell :deep(.availability-select-4.p-selectbutton),
+  .availability-shell :deep(.availability-select-3.p-selectbutton) {
     grid-template-columns: 1fr;
   }
 
@@ -961,9 +1564,19 @@ const resumeMenuItems = [
 
   .resume-file-card,
   .resume-file-actions,
-  .actions-row {
+  .actions-row,
+  .availability-footer,
+  .availability-footer-actions {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .availability-header p {
+    font-size: 16px;
+  }
+
+  .availability-field-short {
+    max-width: none;
   }
 
   .pilot-table {
@@ -981,7 +1594,8 @@ const resumeMenuItems = [
   }
 
   .actions-row :deep(.p-button),
-  .resume-file-actions :deep(.p-button) {
+  .resume-file-actions :deep(.p-button),
+  .availability-footer :deep(.p-button) {
     width: 100%;
   }
 }

@@ -3,7 +3,6 @@
     <div class="card-header">
       <div class="header-titles">
         <h3 class="job-title ds-title-card">{{ title }}</h3>
-        <p class="job-team ds-body-sm">{{ team }}</p>
         <p class="applied-date ds-meta">{{ metaLabel }}</p>
       </div>
       <div class="header-actions">
@@ -192,7 +191,6 @@ const toggleMenu = (event) => {
 }
 
 .job-title,
-.job-team,
 .applied-date {
   margin: 0;
 }
