@@ -6,492 +6,106 @@
       subtitle="Manage your personal details, resume, and job preferences so applications are faster and recommendations stay relevant."
     />
 
-    <TabView
-      class="profile-tabs"
-      :activeIndex="profileTabIndex"
-      scrollable
-      @tab-change="onProfileTabChange"
-    >
+    <TabView v-if="!isMobile" class="profile-tabs" :activeIndex="profileTabIndex" scrollable @tab-change="onProfileTabChange">
       <TabPanel header="Contact Information">
-        <div class="panel-stack">
-          <section class="form-card">
-            <div class="card-heading">
-              <h2>Personal Details</h2>
-              <p>These details are used on your candidate profile and across applications.</p>
-            </div>
-
-            <div class="form-grid form-grid-4">
-              <div class="field">
-                <label for="first-name">First name</label>
-                <InputText id="first-name" v-model="contactDraft.firstName" />
-              </div>
-              <div class="field">
-                <label for="last-name">Last name</label>
-                <InputText id="last-name" v-model="contactDraft.lastName" />
-              </div>
-              <div class="field">
-                <label for="middle-name">Middle name</label>
-                <InputText id="middle-name" v-model="contactDraft.middleName" />
-              </div>
-              <div class="field">
-                <label for="gender">Gender <span class="optional">Optional</span></label>
-                <Dropdown
-                  id="gender"
-                  v-model="contactDraft.gender"
-                  :options="genderOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  placeholder="Select if you'd like"
-                  showClear
-                />
-              </div>
-            </div>
-          </section>
-
-          <section class="form-card">
-            <div class="card-heading">
-              <h2>Contact Details</h2>
-              <p>Your email is fixed to your account. Phone number can be updated anytime.</p>
-            </div>
-
-            <div class="form-grid form-grid-2">
-              <div class="field">
-                <label for="email">Email</label>
-                <InputText id="email" v-model="contactDraft.email" readonly />
-              </div>
-              <div class="field">
-                <label for="phone">Phone number</label>
-                <div class="phone-row">
-                  <Dropdown
-                    id="phone-code"
-                    v-model="contactDraft.phoneCode"
-                    :options="countryCodeOptions"
-                    optionLabel="searchLabel"
-                    optionValue="dialCode"
-                    placeholder="Code"
-                    filter
-                    filterPlaceholder="Search countries..."
-                    class="phone-code"
-                    aria-label="Country calling code"
-                  >
-                    <template #value="{ value, placeholder }">
-                      <div v-if="value" class="phone-option phone-option-selected">
-                        <span class="phone-flag">{{ getCountryByDialCode(value)?.flag }}</span>
-                        <span>{{ value }}</span>
-                      </div>
-                      <span v-else>{{ placeholder }}</span>
-                    </template>
-                    <template #option="{ option }">
-                      <div class="phone-option">
-                        <span class="phone-flag">{{ option.flag }}</span>
-                        <span>{{ option.name }} ({{ option.dialCode }})</span>
-                      </div>
-                    </template>
-                  </Dropdown>
-                  <InputMask id="phone" v-model="contactDraft.phone" mask="999 999 9999" placeholder="066 623 3552" class="phone-input" />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <div class="actions-row">
-            <Button label="Discard Changes" severity="secondary" outlined @click="resetContact" />
-            <Button label="Save" severity="primary" @click="saveContact" />
-          </div>
-        </div>
+        <ProfileContactSection
+          :contact-draft="contactDraft"
+          :gender-options="genderOptions"
+          :country-code-options="countryCodeOptions"
+          :get-country-by-dial-code="getCountryByDialCode"
+          :on-reset="resetContact"
+          :on-save="saveContact"
+        />
       </TabPanel>
-
       <TabPanel header="Resume">
-        <div class="panel-stack">
-          <section class="form-card">
-            <div class="card-heading">
-              <h2>Uploaded Resume</h2>
-              <p>Use your resume to speed up applications and help us understand your background.</p>
-            </div>
-
-            <div v-if="resumeDraft.fileName" class="resume-file-card">
-              <div class="resume-file-icon">
-                <i class="pi pi-file-pdf"></i>
-              </div>
-              <div class="resume-file-meta">
-                <span class="resume-file-label">Last uploaded</span>
-                <strong>{{ resumeDraft.fileName }}</strong>
-                <span>{{ resumeDraft.lastUploaded }}</span>
-              </div>
-              <div class="resume-file-actions">
-                <Button icon="pi pi-chevron-down" severity="secondary" outlined aria-label="Resume actions" @click="toggleResumeMenu" />
-                <Menu ref="resumeMenu" :model="resumeMenuItems" :popup="true" />
-              </div>
-            </div>
-
-            <div v-else class="resume-dropzone" @dragover.prevent @drop.prevent="onResumeDrop">
-              <i class="pi pi-file-arrow-up resume-dropzone-icon"></i>
-              <h3>Drag and drop your resume here</h3>
-              <p>PDF, DOC, or DOCX up to 5 MB</p>
-              <Button label="Choose File" icon="pi pi-upload" severity="secondary" outlined @click="openResumePicker" />
-            </div>
-
-            <input ref="resumeInput" type="file" class="hidden-input" accept=".pdf,.doc,.docx" @change="onResumePicked" />
-
-            <div class="checkbox-row resume-attach-row">
-              <Checkbox v-model="resumeDraft.attachDuringApplication" inputId="attach-resume" :binary="true" />
-              <label for="attach-resume">Attach this document automatically when I apply</label>
-            </div>
-          </section>
-
-          <section class="form-card">
-            <div class="card-heading">
-              <h2>Skills From Resume</h2>
-              <p>Review parsed skills and add anything that should also be included on your profile.</p>
-            </div>
-
-            <div class="field">
-              <label for="skills">Skills</label>
-              <Chips id="skills" v-model="resumeDraft.skills" separator="," addOnBlur />
-            </div>
-          </section>
-
-          <div class="actions-row">
-            <Button label="Discard Changes" severity="secondary" outlined @click="resetResume" />
-            <Button label="Save" severity="primary" @click="saveResume" />
-          </div>
-        </div>
+        <ProfileResumeSection :resume-draft="resumeDraft" :on-reset="resetResume" :on-save="saveResume" />
       </TabPanel>
-
       <TabPanel header="Preferences">
-        <div class="panel-stack">
-          <section class="form-card">
-            <div class="card-heading">
-              <h2>Career Preferences</h2>
-              <p>These preferences help tailor the opportunities and recommendations you see.</p>
-            </div>
-
-            <div class="field">
-              <label for="job-categories">Preferred job categories</label>
-              <Chips id="job-categories" v-model="preferencesDraft.jobCategories" separator="," addOnBlur />
-            </div>
-
-            <div class="form-grid form-grid-2">
-              <div class="field">
-                <label for="job-location">Preferred job location</label>
-                <InputText id="job-location" v-model="preferencesDraft.location" />
-              </div>
-              <div class="field">
-                <label for="recent-title">Most recent job title</label>
-                <InputText id="recent-title" v-model="preferencesDraft.recentTitle" />
-              </div>
-            </div>
-
-            <div class="field preferences-experience-field">
-              <fieldset class="field-group">
-                <legend id="experience-range">Relevant years of experience</legend>
-              <SelectButton
-                aria-labelledby="experience-range"
-                v-model="preferencesDraft.experienceRange"
-                :options="experienceOptions"
-                optionLabel="label"
-                optionValue="value"
-                class="experience-select"
-              />
-              </fieldset>
-              <div class="checkbox-row checkbox-row-plain career-start-row">
-                <Checkbox v-model="preferencesDraft.startingCareer" inputId="starting-career" :binary="true" />
-                <label for="starting-career">Just starting my career</label>
-              </div>
-            </div>
-          </section>
-
-          <div class="actions-row">
-            <Button label="Discard Changes" severity="secondary" outlined @click="resetPreferences" />
-            <Button label="Save" severity="primary" @click="savePreferences" />
-          </div>
-        </div>
+        <ProfilePreferencesSection :preferences-draft="preferencesDraft" :experience-options="experienceOptions" :on-reset="resetPreferences" :on-save="savePreferences" />
       </TabPanel>
-
       <TabPanel header="Availability">
-        <div class="panel-stack">
-          <section class="availability-shell">
-            <div class="availability-card">
-              <div class="availability-content">
-                <div class="availability-header">
-                  <div class="availability-title-row">
-                    <h2>My Availability</h2>
-                  </div>
-                  <p>Keep your availability up-to-date to get matched with the best jobs.</p>
-                </div>
-
-                <fieldset class="availability-section availability-group">
-                  <legend id="availability-months-label" class="availability-label">Which months are you available to work?</legend>
-                  <SelectButton
-                    v-model="availabilityDraft.months"
-                    :options="monthOptions"
-                    multiple
-                    unselectable
-                    aria-labelledby="availability-months-label"
-                    class="availability-select availability-select-months"
-                  />
-                </fieldset>
-
-                <div class="availability-divider"></div>
-
-                <div class="availability-section availability-section-compact">
-                  <div class="availability-field availability-field-short">
-                    <label for="days-per-week">How many days of the week are you available?</label>
-                    <InputText
-                      id="days-per-week"
-                      :model-value="availabilityDraft.daysPerWeek"
-                      type="number"
-                      min="0"
-                      max="7"
-                      step="1"
-                      inputmode="numeric"
-                      placeholder="0"
-                      class="availability-native-number availability-field-short"
-                      @update:model-value="availabilityDraft.daysPerWeek = normalizeNumberInput($event, 0, 7)"
-                    />
-                    <small>Max. 7 days per week</small>
-                  </div>
-                </div>
-
-                <fieldset class="availability-section availability-section-days availability-group">
-                  <legend id="availability-days-label" class="availability-label">Select days of the week you are available</legend>
-                  <div class="availability-select-row availability-select-row-split">
-                    <SelectButton
-                      v-model="availabilityDraft.days"
-                      :options="fullWeekPrimary"
-                      multiple
-                      unselectable
-                      aria-labelledby="availability-days-label"
-                      class="availability-select availability-select-days availability-select-4"
-                    />
-                    <span class="availability-inline-divider" aria-hidden="true"></span>
-                    <SelectButton
-                      v-model="availabilityDraft.days"
-                      :options="fullWeekWeekend"
-                      multiple
-                      unselectable
-                      aria-labelledby="availability-days-label"
-                      class="availability-select availability-select-days availability-select-3"
-                    />
-                  </div>
-                </fieldset>
-
-                <div class="availability-divider"></div>
-
-                <fieldset class="availability-section availability-section-days availability-group">
-                  <legend id="availability-weekdays-label" class="availability-label">Select weekdays you are available</legend>
-                  <SelectButton
-                    v-model="availabilityDraft.weekdays"
-                    :options="weekdayOptions"
-                    multiple
-                    unselectable
-                    aria-labelledby="availability-weekdays-label"
-                    class="availability-select availability-select-days availability-select-4"
-                  />
-                </fieldset>
-
-                <div class="availability-divider"></div>
-
-                <div class="availability-section availability-section-compact">
-                  <div class="availability-field availability-field-short">
-                    <label for="weekend-days">How many weekends are you available? (Friday-Sunday)</label>
-                    <InputText
-                      id="weekend-days"
-                      :model-value="availabilityDraft.weekendDaysCount"
-                      type="number"
-                      min="0"
-                      max="3"
-                      step="1"
-                      inputmode="numeric"
-                      placeholder="0"
-                      class="availability-native-number availability-field-short"
-                      @update:model-value="availabilityDraft.weekendDaysCount = normalizeNumberInput($event, 0, 3)"
-                    />
-                    <small>Max. 3 weekend days</small>
-                  </div>
-                </div>
-
-                <fieldset class="availability-section availability-section-days availability-group">
-                  <legend id="availability-weekend-days-label" class="availability-label">Select weekend days you are available</legend>
-                  <SelectButton
-                    v-model="availabilityDraft.weekendDays"
-                    :options="weekendOptions"
-                    multiple
-                    unselectable
-                    aria-labelledby="availability-weekend-days-label"
-                    class="availability-select availability-select-days availability-select-3"
-                  />
-                </fieldset>
-
-                <div class="availability-divider"></div>
-
-                <div class="availability-section availability-section-compact">
-                  <div class="availability-field">
-                    <label for="hours-per-week">How many hours a week are you willing to work?</label>
-                    <InputText
-                      id="hours-per-week"
-                      :model-value="availabilityDraft.hoursPerWeek"
-                      type="number"
-                      min="0"
-                      max="60"
-                      step="1"
-                      inputmode="numeric"
-                      placeholder="0"
-                      class="availability-native-number availability-native-number-wide"
-                      @update:model-value="availabilityDraft.hoursPerWeek = normalizeNumberInput($event, 0, 60)"
-                    />
-                    <small>Max. 60 hours per week</small>
-                  </div>
-                </div>
-
-                <div class="availability-divider"></div>
-
-                <fieldset class="availability-section availability-group">
-                  <legend class="availability-label">Are you available to work on public holidays?</legend>
-                  <div class="availability-radio-row">
-                    <div class="availability-radio-item">
-                      <RadioButton v-model="availabilityDraft.publicHolidays" inputId="public-holidays-yes" name="publicHolidays" :value="true" />
-                      <label for="public-holidays-yes">Yes</label>
-                    </div>
-                    <div class="availability-radio-item">
-                      <RadioButton v-model="availabilityDraft.publicHolidays" inputId="public-holidays-no" name="publicHolidays" :value="false" />
-                      <label for="public-holidays-no">No</label>
-                    </div>
-                  </div>
-                </fieldset>
-              </div>
-            </div>
-
-            <div class="availability-footer">
-              <Button
-                severity="secondary"
-                outlined
-                class="availability-clear-btn"
-                @click="clearAvailability"
-              >
-                <span class="availability-clear-content">
-                  <svg class="availability-clear-icon" viewBox="0 0 24 24" aria-hidden="true">
-                    <path
-                      d="M9 3.75h6a.75.75 0 0 1 .75.75v1.5H19.5a.75.75 0 0 1 0 1.5h-.69l-.63 10.114A2.25 2.25 0 0 1 15.934 20.25H8.066a2.25 2.25 0 0 1-2.245-2.136L5.19 7.5H4.5a.75.75 0 0 1 0-1.5h3.75V4.5A.75.75 0 0 1 9 3.75Zm5.25 2.25v-.75h-4.5V6h4.5Zm-6.928 1.5.595 10.021a.75.75 0 0 0 .749.729h7.868a.75.75 0 0 0 .749-.729l.595-10.02H7.322Zm2.553 2.25a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5a.75.75 0 0 1 .75-.75Zm4.5 0a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5a.75.75 0 0 1 .75-.75Z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                  <span>Clear Availability</span>
-                </span>
-              </Button>
-
-              <div class="availability-footer-actions">
-                <Button label="Discard Changes" severity="secondary" outlined @click="resetAvailability" />
-                <Button label="Save" severity="primary" @click="saveAvailability" />
-              </div>
-            </div>
-          </section>
-        </div>
+        <ProfileAvailabilitySection
+          :availability-draft="availabilityDraft"
+          :month-options="monthOptions"
+          :full-week-primary="fullWeekPrimary"
+          :full-week-weekend="fullWeekWeekend"
+          :weekday-options="weekdayOptions"
+          :weekend-options="weekendOptions"
+          :normalize-number-input="normalizeNumberInput"
+          :on-clear="clearAvailability"
+          :on-reset="resetAvailability"
+          :on-save="saveAvailability"
+        />
       </TabPanel>
-
       <TabPanel header="Pilot Credentials">
-        <div class="panel-stack">
-          <section class="form-card pilot-credentials-card">
-            <div class="card-heading">
-              <h2>Pilot Flight Hours</h2>
-              <p>Add and maintain your recent aircraft hours using the same profile workflow as the rest of this section.</p>
-            </div>
-
-            <div class="pilot-table" role="table" aria-label="Pilot flight hours">
-              <div class="pilot-table-head" role="rowgroup">
-                <div class="pilot-head-cell" role="columnheader">Aircraft type</div>
-                <div class="pilot-head-cell" role="columnheader">Date Last Flown</div>
-                <div class="pilot-head-cell" role="columnheader">Total Fixed-Wing Turbine Time (In Hrs)</div>
-                <div class="pilot-head-cell" role="columnheader">Fixed-Wing Turbine Time in last 60 Months (In Hrs)</div>
-                <div class="pilot-head-cell" role="columnheader">Total Fixed-Wing PIC Turbine Time (In Hrs)</div>
-                <div class="pilot-head-cell" role="columnheader">Total Fixed-Wing SIC Turbine Time (In Hrs)</div>
-                <div class="pilot-head-cell pilot-head-cell-actions" role="columnheader">Actions</div>
-              </div>
-
-              <div
-                v-for="(row, index) in pilotCredentialsDraft"
-                :key="row.id"
-                class="pilot-table-row"
-                role="row"
-              >
-                <div class="pilot-cell" role="cell">
-                  <Dropdown
-                    v-model="row.aircraftType"
-                    :options="aircraftOptions"
-                    optionLabel="label"
-                    optionValue="value"
-                    placeholder="Type"
-                    class="pilot-field"
-                  />
-                </div>
-                <div class="pilot-cell" role="cell">
-                  <Calendar
-                    v-model="row.dateLastFlown"
-                    dateFormat="mm/dd/yy"
-                    placeholder="mm/dd/yyyy"
-                    showIcon
-                    iconDisplay="input"
-                    class="pilot-field"
-                  />
-                </div>
-                <div class="pilot-cell" role="cell">
-                  <InputText v-model="row.totalFixedWingTurbineTime" class="pilot-field" />
-                </div>
-                <div class="pilot-cell" role="cell">
-                  <InputText v-model="row.fixedWingTurbineLast60Months" class="pilot-field" />
-                </div>
-                <div class="pilot-cell" role="cell">
-                  <InputText v-model="row.totalPicTurbineTime" class="pilot-field" />
-                </div>
-                <div class="pilot-cell" role="cell">
-                  <InputText v-model="row.totalSicTurbineTime" class="pilot-field" />
-                </div>
-                <div class="pilot-cell pilot-cell-actions" role="cell">
-                  <Button
-                    icon="pi pi-trash"
-                    text
-                    rounded
-                    severity="secondary"
-                    class="pilot-delete-btn"
-                    :aria-label="`Remove aircraft row ${index + 1}`"
-                    :disabled="pilotCredentialsDraft.length === 1"
-                    @click="removePilotCredentialRow(index)"
-                  />
-                </div>
-              </div>
-
-              <button type="button" class="pilot-add-row" @click="addPilotCredentialRow">
-                <i class="pi pi-plus"></i>
-                <span>Add Aircraft</span>
-              </button>
-            </div>
-
-            <div class="actions-row pilot-actions-row">
-              <Button label="Discard Changes" severity="secondary" outlined @click="resetPilotCredentials" />
-              <Button label="Submit" severity="primary" class="pilot-submit-btn" @click="savePilotCredentials" />
-            </div>
-          </section>
-        </div>
+        <ProfilePilotCredentialsSection
+          :pilot-credentials-draft="pilotCredentialsDraft"
+          :aircraft-options="aircraftOptions"
+          :on-add="addPilotCredentialRow"
+          :on-remove="removePilotCredentialRow"
+          :on-reset="resetPilotCredentials"
+          :on-save="savePilotCredentials"
+        />
       </TabPanel>
     </TabView>
+
+    <Accordion v-else :activeIndex="profileTabIndex" class="profile-mobile-accordion" @tab-open="onProfileTabChange">
+      <AccordionTab header="Contact Information">
+        <ProfileContactSection
+          :contact-draft="contactDraft"
+          :gender-options="genderOptions"
+          :country-code-options="countryCodeOptions"
+          :get-country-by-dial-code="getCountryByDialCode"
+          :on-reset="resetContact"
+          :on-save="saveContact"
+        />
+      </AccordionTab>
+      <AccordionTab header="Resume">
+        <ProfileResumeSection :resume-draft="resumeDraft" :on-reset="resetResume" :on-save="saveResume" />
+      </AccordionTab>
+      <AccordionTab header="Preferences">
+        <ProfilePreferencesSection :preferences-draft="preferencesDraft" :experience-options="experienceOptions" :on-reset="resetPreferences" :on-save="savePreferences" />
+      </AccordionTab>
+      <AccordionTab header="Availability">
+        <ProfileAvailabilitySection
+          :availability-draft="availabilityDraft"
+          :month-options="monthOptions"
+          :full-week-primary="fullWeekPrimary"
+          :full-week-weekend="fullWeekWeekend"
+          :weekday-options="weekdayOptions"
+          :weekend-options="weekendOptions"
+          :normalize-number-input="normalizeNumberInput"
+          :on-clear="clearAvailability"
+          :on-reset="resetAvailability"
+          :on-save="saveAvailability"
+        />
+      </AccordionTab>
+      <AccordionTab header="Pilot Credentials">
+        <ProfilePilotCredentialsSection
+          :pilot-credentials-draft="pilotCredentialsDraft"
+          :aircraft-options="aircraftOptions"
+          :on-add="addPilotCredentialRow"
+          :on-remove="removePilotCredentialRow"
+          :on-reset="resetPilotCredentials"
+          :on-save="savePilotCredentials"
+        />
+      </AccordionTab>
+    </Accordion>
   </section>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-import Button from 'primevue/button';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import Accordion from 'primevue/accordion';
+import AccordionTab from 'primevue/accordiontab';
 import TabView from 'primevue/tabview';
 import TabPanel from 'primevue/tabpanel';
-import InputText from 'primevue/inputtext';
-import Dropdown from 'primevue/dropdown';
-import Calendar from 'primevue/calendar';
-import InputMask from 'primevue/inputmask';
-import Checkbox from 'primevue/checkbox';
-import Chips from 'primevue/chips';
-import Menu from 'primevue/menu';
-import RadioButton from 'primevue/radiobutton';
-import SelectButton from 'primevue/selectbutton';
 import SectionHero from './SectionHero.vue';
+import ProfileContactSection from './ProfileContactSection.vue';
+import ProfileResumeSection from './ProfileResumeSection.vue';
+import ProfilePreferencesSection from './ProfilePreferencesSection.vue';
+import ProfileAvailabilitySection from './ProfileAvailabilitySection.vue';
+import ProfilePilotCredentialsSection from './ProfilePilotCredentialsSection.vue';
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
@@ -616,8 +230,7 @@ const pilotCredentialsSaved = ref(clone(pilotCredentialsInitial));
 const pilotCredentialsDraft = ref(clone(pilotCredentialsInitial));
 
 const profileTabIndex = ref(0);
-const resumeInput = ref(null);
-const resumeMenu = ref(null);
+const isMobile = ref(false);
 const nextPilotCredentialId = ref(pilotCredentialsInitial.length + 1);
 
 const onProfileTabChange = (event) => {
@@ -764,50 +377,20 @@ const resetPilotCredentials = () => {
   pilotCredentialsDraft.value = clone(pilotCredentialsSaved.value);
 };
 
-const openResumePicker = () => {
-  resumeInput.value?.click();
+const mobileQuery = typeof window !== 'undefined' ? window.matchMedia('(max-width: 768px)') : null;
+
+const syncViewport = () => {
+  isMobile.value = mobileQuery?.matches ?? false;
 };
 
-const toggleResumeMenu = (event) => {
-  resumeMenu.value?.toggle(event);
-};
+onMounted(() => {
+  syncViewport();
+  mobileQuery?.addEventListener?.('change', syncViewport);
+});
 
-const setResumeFile = (file) => {
-  if (!file) return;
-
-  resumeDraft.value.fileName = file.name;
-  resumeDraft.value.lastUploaded = 'Uploaded just now';
-};
-
-const onResumePicked = (event) => {
-  const file = event.target.files?.[0];
-  setResumeFile(file);
-  event.target.value = '';
-};
-
-const onResumeDrop = (event) => {
-  const file = event.dataTransfer?.files?.[0];
-  setResumeFile(file);
-};
-
-const removeResume = () => {
-  resumeDraft.value.fileName = '';
-  resumeDraft.value.lastUploaded = '';
-  resumeDraft.value.attachDuringApplication = false;
-};
-
-const resumeMenuItems = [
-  {
-    label: 'Replace resume',
-    icon: 'pi pi-upload',
-    command: () => openResumePicker()
-  },
-  {
-    label: 'Remove resume',
-    icon: 'pi pi-trash',
-    command: () => removeResume()
-  }
-];
+onBeforeUnmount(() => {
+  mobileQuery?.removeEventListener?.('change', syncViewport);
+});
 </script>
 
 <style scoped>
@@ -853,6 +436,26 @@ const resumeMenuItems = [
   border-color: rgba(60, 109, 104, 0.2);
   background-color: rgba(60, 109, 104, 0.08);
   color: var(--text-strong);
+}
+
+.profile-mobile-accordion :deep(.p-accordion-tab) {
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.profile-mobile-accordion :deep(.p-accordion-header-link) {
+  min-height: 56px;
+  padding: 16px 18px;
+  border: none;
+  color: var(--text-strong);
+  background: #fff;
+}
+
+.profile-mobile-accordion :deep(.p-accordion-content) {
+  border: none;
+  padding: 0 16px 16px;
 }
 
 .panel-stack {
@@ -1731,5 +1334,123 @@ const resumeMenuItems = [
   .availability-footer :deep(.p-button) {
     width: 100%;
   }
+}
+</style>
+<style>
+.profile-page .panel-stack { display: flex; flex-direction: column; gap: 32px; padding-top: 24px; }
+.profile-page .form-card { padding: 28px; border: 1px solid var(--border-color); border-radius: 16px; background-color: var(--bg-default); }
+.profile-page .card-heading { margin-bottom: 16px; }
+.profile-page .card-heading h2 { margin: 0 0 4px; font-size: 20px; color: var(--text-strong); }
+.profile-page .card-heading p { margin: 0; font-size: 14px; line-height: 22px; color: var(--text-subtle); }
+.profile-page .form-grid { display: grid; gap: 20px; }
+.profile-page .form-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.profile-page .form-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.profile-page .field { display: flex; flex-direction: column; gap: 10px; }
+.profile-page .field label,
+.profile-page .field-group legend,
+.profile-page .availability-label,
+.profile-page .availability-field label { font-size: 13px; font-weight: 500; color: var(--text-strong); }
+.profile-page .optional { color: var(--text-subtle); font-weight: 400; }
+.profile-page .field .p-inputtext,
+.profile-page .field .p-dropdown,
+.profile-page .field .p-inputmask,
+.profile-page .field .p-chips,
+.profile-page .field .p-selectbutton { width: 100%; }
+.profile-page .field .p-inputtext[readonly] { background-color: #f7f9fc; color: var(--text-subtle); }
+.profile-page .phone-row { display: flex; align-items: stretch; border: 1px solid var(--border-color); border-radius: 10px; background-color: var(--bg-default); overflow: hidden; }
+.profile-page .phone-code { flex: 0 0 140px; }
+.profile-page .phone-input { flex: 1; }
+.profile-page .phone-option { display: inline-flex; align-items: center; gap: 10px; min-height: 24px; }
+.profile-page .phone-option-selected { font-size: 14px; color: var(--text-strong); }
+.profile-page .phone-flag { font-size: 16px; line-height: 1; }
+.profile-page .checkbox-row { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-default); }
+.profile-page .resume-attach-row { margin-top: 20px; padding-top: 4px; }
+.profile-page .checkbox-row-plain { min-height: 44px; }
+.profile-page .preferences-experience-field { gap: 14px; }
+.profile-page .career-start-row { margin-top: 2px; }
+.profile-page .field-group,
+.profile-page .availability-group { margin: 0; padding: 0; border: 0; min-width: 0; }
+.profile-page .field-group legend,
+.profile-page .availability-group legend { padding: 0; }
+.profile-page .actions-row { display: flex; justify-content: flex-end; gap: 12px; padding-top: 4px; }
+.profile-page .availability-shell { display: flex; flex-direction: column; border: 1px solid rgba(0, 0, 0, 0.15); border-radius: 8px; background: #fff; overflow: hidden; }
+.profile-page .availability-card { padding: 32px; background: #fff; }
+.profile-page .availability-content { display: flex; flex-direction: column; gap: 24px; }
+.profile-page .availability-header { display: flex; flex-direction: column; gap: 16px; }
+.profile-page .availability-title-row { display: flex; align-items: center; padding-bottom: 16px; border-bottom: 1px solid rgba(0, 0, 0, 0.08); }
+.profile-page .availability-title-row h2 { margin: 0 0 4px; font-size: 20px; line-height: var(--type-title-section-line); font-weight: 600; color: var(--text-strong); }
+.profile-page .availability-header p { margin: 0; font-size: 14px; line-height: 22px; color: var(--text-subtle); }
+.profile-page .availability-section { display: flex; flex-direction: column; gap: 12px; }
+.profile-page .availability-section-compact,
+.profile-page .availability-section-days { gap: 8px; }
+.profile-page .availability-field { display: flex; flex-direction: column; gap: 4px; }
+.profile-page .availability-field-short { max-width: 280px; }
+.profile-page .availability-field small { font-size: 12px; line-height: 16px; color: var(--text-subtle); }
+.profile-page .availability-select-row { display: grid; gap: 8px; }
+.profile-page .availability-select-row-split { grid-template-columns: minmax(0, 4fr) 16px minmax(0, 3fr); align-items: center; }
+.profile-page .availability-inline-divider { display: block; width: 1px; height: 32px; justify-self: center; background: rgba(0, 0, 0, 0.12); }
+.profile-page .availability-divider { height: 1px; background: rgba(0, 0, 0, 0.08); }
+.profile-page .availability-radio-row { display: flex; flex-wrap: wrap; gap: 24px; }
+.profile-page .availability-radio-item { display: inline-flex; align-items: center; gap: 8px; }
+.profile-page .availability-radio-item label { font-size: 14px; line-height: 24px; color: var(--text-strong); cursor: pointer; }
+.profile-page .availability-footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 24px; border-top: 1px solid rgba(0, 0, 0, 0.15); background: #fcfcfc; box-shadow: 0 4px 6px rgba(69,69,69,0.1); }
+.profile-page .availability-footer-actions { display: flex; align-items: center; gap: 16px; }
+.profile-page .availability-clear-content { display: inline-flex; align-items: center; gap: 6px; }
+.profile-page .availability-clear-icon { width: 18px; height: 18px; flex: 0 0 auto; }
+.profile-page .pilot-credentials-card { border-color: var(--border-color); }
+.profile-page .pilot-table { border: 1px solid #d1d5dc; background-color: #fff; }
+.profile-page .pilot-table-head,
+.profile-page .pilot-table-row { display: grid; grid-template-columns: 1.05fr 1.1fr 1.05fr 1.15fr 1.1fr 1.1fr 72px; }
+.profile-page .pilot-head-cell { padding: 16px 12px; border-right: 1px solid #d1d5dc; border-bottom: 1px solid #d1d5dc; background-color: #f4f6fa; font-size: 14px; line-height: 24px; letter-spacing: 0.25px; font-weight: 600; color: rgba(0, 0, 0, 0.7); }
+.profile-page .pilot-head-cell:last-child,
+.profile-page .pilot-cell:last-child { border-right: none; }
+.profile-page .pilot-table-row { background-color: #f8f9fb; }
+.profile-page .pilot-cell { padding: 14px 12px; border-right: 1px solid #d1d5dc; border-bottom: 1px solid #d1d5dc; }
+.profile-page .pilot-cell-actions { display: flex; align-items: center; justify-content: center; }
+.profile-page .pilot-field { width: 100%; }
+.profile-page .pilot-delete-btn { width: 32px; height: 32px; border: 1px solid #d1d5dc; border-radius: 999px; color: #8c95a8; }
+.profile-page .pilot-add-row { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 20px 40px; border: none; border-top: 0; background: #fff; color: #111b40; font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 600; line-height: 1.2; cursor: pointer; }
+.profile-page .pilot-add-row i { color: #155eef; font-size: 18px; }
+.profile-page .pilot-actions-row { padding-top: 28px; }
+.profile-page .pilot-submit-btn { min-width: 140px; }
+.profile-page .resume-file-card { display: flex; align-items: center; gap: 20px; padding: 18px 20px; border: 1px solid var(--border-color); border-radius: 14px; background-color: #f9fbfd; }
+.profile-page .resume-file-icon { width: 48px; height: 48px; border-radius: 14px; background-color: #eef3f8; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.profile-page .resume-file-icon i { font-size: 20px; color: var(--primary-bg); }
+.profile-page .resume-file-meta { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.profile-page .resume-file-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-subtle); }
+.profile-page .resume-file-meta strong { color: var(--text-strong); }
+.profile-page .resume-file-meta span:last-child { font-size: 14px; color: var(--text-subtle); }
+.profile-page .resume-file-actions { display: flex; align-items: center; gap: 8px; }
+.profile-page .resume-dropzone { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 32px 24px; border: 1px dashed var(--border-color); border-radius: 16px; background-color: #fbfcfd; text-align: center; margin-bottom: 24px; }
+.profile-page .resume-dropzone h3 { margin: 0; font-size: 20px; color: var(--text-strong); }
+.profile-page .resume-dropzone p { margin: 0; font-size: 14px; color: var(--text-subtle); }
+.profile-page .resume-dropzone-icon { font-size: 28px; color: var(--primary-bg); }
+.profile-page .hidden-input { display: none; }
+
+@media (max-width: 1024px) {
+  .profile-page .form-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .profile-page .availability-select-row-split { grid-template-columns: 1fr; }
+  .profile-page .availability-inline-divider { display: none; }
+}
+
+@media (max-width: 768px) {
+  .profile-page .panel-stack { gap: 24px; padding-top: 16px; }
+  .profile-page .form-card { padding: 16px; border-radius: 12px; }
+  .profile-page .availability-card { padding: 16px; }
+  .profile-page .form-grid-4,
+  .profile-page .form-grid-2,
+  .profile-page .availability-select-row-split { grid-template-columns: 1fr; }
+  .profile-page .phone-row { flex-direction: column; }
+  .profile-page .phone-code { flex-basis: auto; }
+  .profile-page .resume-file-card,
+  .profile-page .resume-file-actions,
+  .profile-page .actions-row,
+  .profile-page .availability-footer,
+  .profile-page .availability-footer-actions { flex-direction: column; align-items: stretch; }
+  .profile-page .availability-field-short { max-width: none; }
+  .profile-page .pilot-table { overflow-x: auto; }
+  .profile-page .pilot-table-head,
+  .profile-page .pilot-table-row { min-width: 980px; grid-template-columns: 150px 140px 150px 150px 150px 150px 72px; }
+  .profile-page .pilot-submit-btn { width: 100%; }
 }
 </style>

@@ -20,6 +20,7 @@
         :class="{ 'alerts-row-last': index === alerts.length - 1 }"
       >
         <div class="alert-name-cell">
+          <span class="mobile-field-label">Alert Name</span>
           <template v-if="editingAlertId === alert.id">
             <div class="alert-edit-row">
               <InputText v-model="editingName" class="alert-name-input" />
@@ -46,6 +47,7 @@
         </div>
 
         <div class="alert-frequency-cell">
+          <span class="mobile-field-label">Email Frequency</span>
           <Dropdown
             v-model="alert.frequency"
             :options="frequencyOptions"
@@ -56,6 +58,7 @@
         </div>
 
         <div class="alert-actions-cell">
+          <span class="mobile-field-label">Actions</span>
           <a href="#" class="results-link" @click.prevent>View results</a>
           <span class="actions-separator">|</span>
           <a href="#" class="delete-link" @click.prevent>Delete alert</a>
@@ -220,18 +223,24 @@ const saveAlertName = (alertId) => {
   color: var(--border-color);
 }
 
+.mobile-field-label {
+  display: none;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-subtle);
+}
+
 @media (max-width: 768px) {
   .job-alerts-page {
     gap: 28px;
   }
 
   .alerts-table-card {
-    padding: 12px 16px;
-  }
-
-  .alerts-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    padding: 0;
+    border: none;
+    background: transparent;
   }
 
   .alerts-table-header {
@@ -239,7 +248,27 @@ const saveAlertName = (alertId) => {
   }
 
   .alerts-row {
-    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: var(--bg-default);
+  }
+
+  .mobile-field-label {
+    display: block;
+  }
+
+  .alert-name-cell,
+  .alert-frequency-cell,
+  .alert-actions-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 
   .alert-edit-row {
@@ -253,6 +282,10 @@ const saveAlertName = (alertId) => {
 
   .frequency-dropdown {
     max-width: none;
+  }
+
+  .actions-separator {
+    display: none;
   }
 }
 </style>

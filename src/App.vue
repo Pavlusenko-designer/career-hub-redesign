@@ -2,7 +2,7 @@
   <div class="dashboard-container">
     <a class="skip-link" href="#main-content">Skip to main content</a>
 
-    <div class="top-nav">
+    <div v-if="!isMobile" class="top-nav">
       <nav aria-label="Dashboard sections">
         <div class="top-nav-scroll" role="tablist" aria-orientation="horizontal" @keydown="onTabKeydown">
           <button
@@ -27,302 +27,21 @@
     </div>
 
     <main id="main-content" class="main-content" tabindex="-1">
-      <div
-        :id="getPanelId(activeTab)"
-        role="tabpanel"
-        :aria-labelledby="getTabId(activeTab)"
-      >
-      <template v-if="activeTab === 0">
-        <OnboardingWidget />
-
-        <template v-if="!isEmptyState">
-          <section class="dashboard-section">
-            <div class="section-header">
-              <div class="title-area">
-                <h2>Saved Jobs</h2>
-                <p class="subtitle">Jobs you've bookmarked for later</p>
-              </div>
-              <a href="#" class="view-all-link" @click.prevent="activeTab = 3">View All <AppIcon name="arrow-right" /></a>
-            </div>
-            <div class="cards-grid-3">
-              <JobCard
-                v-for="job in savedJobs.slice(0, 3)"
-                :key="job.jobId"
-                v-bind="job"
-              />
-            </div>
-          </section>
-
-          <section class="dashboard-section">
-            <div class="section-header">
-              <div class="title-area">
-                <h2>Upcoming Interviews</h2>
-                <p class="subtitle">Prepare for your scheduled interviews</p>
-              </div>
-              <a href="#" class="view-all-link" @click.prevent="activeTab = 2">View All <AppIcon name="arrow-right" /></a>
-            </div>
-            <div class="cards-list-vertical">
-              <InterviewCard
-                v-for="interview in interviews.slice(0, 3)"
-                :key="`${interview.title}-${interview.date}-${interview.time}`"
-                v-bind="interview"
-              />
-            </div>
-          </section>
-
-          <section class="dashboard-section">
-            <div class="section-header">
-              <div class="title-area">
-                <h2>Active Applications</h2>
-                <p class="subtitle">Track your application progress</p>
-              </div>
-              <a href="#" class="view-all-link" @click.prevent="activeTab = 1">View All <AppIcon name="arrow-right" /></a>
-            </div>
-            <div class="cards-grid-3">
-              <ApplicationCard
-                v-for="application in dashboardApplications"
-                :key="application.title"
-                v-bind="application"
-                :show-highlight="false"
-              />
-            </div>
-          </section>
-
-          <section class="dashboard-section">
-            <div class="hero-widgets">
-              <div class="widget-card widget-cv">
-                <span class="widget-label">Recommended</span>
-                <h2 class="widget-title">Get matched!</h2>
-                <p class="widget-text">Upload your resume and see jobs that match your skills and experience.</p>
-                <div class="mt-auto">
-                  <Button label="Search with CV" severity="primary" style="width: 100%" />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="dashboard-section">
-            <div class="section-header">
-              <div class="title-area">
-                <h2>Recommended Events</h2>
-                <p class="subtitle">Career events curated for you</p>
-              </div>
-              <a href="#" class="view-all-link">View All <AppIcon name="arrow-right" /></a>
-            </div>
-            <div class="events-list">
-              <div class="event-card">
-                <div class="event-image">
-                  <img src="/tech_career_fair.png" alt="Tech Career Fair 2028" />
-                </div>
-                <div class="event-content">
-                  <div class="event-header">
-                    <div class="event-title-group">
-                      <h3 class="event-title ds-title-card">Tech Career Fair 2028</h3>
-                      <div class="event-tags">
-                        <span class="event-tag ds-chip-text">Conference</span>
-                        <span class="event-tag ds-chip-text">In person</span>
-                      </div>
-                    </div>
-                  </div>
-                  <p class="event-description ds-body">Connect with top tech companies and explore exciting career opportunities.</p>
-                  <div class="event-details event-details-inline">
-                    <InfoChip icon-name="calendar" label="Mar 15, 2026, 10:00 AM EST" />
-                    <InfoChip icon-name="map-marker" label="Toronto, Canada" />
-                    <InfoChip icon-name="users" label="150 attendees" />
-                  </div>
-                  <div class="event-actions">
-                    <Button label="Learn More" severity="secondary" outlined />
-                    <Button label="Register Now" severity="primary" />
-                  </div>
-                </div>
-              </div>
-
-              <div class="event-card">
-                <div class="event-image">
-                  <img src="/workshop_event.png" alt="Product Management Workshop" />
-                </div>
-                <div class="event-content">
-                  <div class="event-header">
-                    <div class="event-title-group">
-                      <h3 class="event-title ds-title-card">Product Management Workshop</h3>
-                      <div class="event-tags">
-                        <span class="event-tag ds-chip-text">Workshop</span>
-                        <span class="event-tag ds-chip-text">Small group</span>
-                      </div>
-                    </div>
-                  </div>
-                  <p class="event-description ds-body">Learn essential PM skills from industry leaders and network with peers</p>
-                  <div class="event-details event-details-inline">
-                    <InfoChip icon-name="calendar" label="Mar 20, 2026, 10:00 AM EST" />
-                    <InfoChip icon-name="map-marker" label="Toronto, Canada" />
-                    <InfoChip icon-name="users" label="24 attendees" />
-                  </div>
-                  <div class="event-actions">
-                    <Button label="Learn More" severity="secondary" outlined />
-                    <Button label="Register Now" severity="primary" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </template>
-
-        <div v-else class="empty-state-container">
-          <div class="empty-state-content">
-            <div class="icon-wrapper">
-              <AppIcon name="compass" />
-            </div>
-            <h2 class="empty-title">Your career journey starts here</h2>
-            <p class="empty-subtitle">You haven't saved or applied to any jobs yet. Start exploring thousands of open roles that natively match your unique skills and preferences.</p>
-
-            <div class="empty-actions">
-              <Button label="Explore Jobs" severity="primary" size="large">
-                <template #icon>
-                  <AppIcon name="search" />
-                </template>
-              </Button>
-              <Button label="Job Alerts" severity="secondary" outlined size="large">
-                <template #icon>
-                  <AppIcon name="bell" />
-                </template>
-              </Button>
-            </div>
-
-            <div class="popular-searches">
-              <span class="searches-label">Popular Categories to Explore:</span>
-              <div class="search-tags">
-                <Button label="Product Design" rounded outlined severity="secondary" size="small" />
-                <Button label="Software Engineering" rounded outlined severity="secondary" size="small" />
-                <Button label="Marketing & Sales" rounded outlined severity="secondary" size="small" />
-                <Button label="Data Science" rounded outlined severity="secondary" size="small" />
-                <Button label="Customer Success" rounded outlined severity="secondary" size="small" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </template>
-
-      <template v-else-if="activeTab === 1">
-        <SectionHero
-          eyebrow="Applications"
-          title="Keep track of the roles you've already applied to"
-          subtitle="Review your current applications and open the role details whenever you want a closer look."
-        />
-
-        <section class="dashboard-section">
-          <div class="section-header">
-            <div class="title-area">
-              <h2>Active Applications</h2>
-              <p class="subtitle">Applications still moving through pre-interview stages</p>
-            </div>
-          </div>
-          <div class="cards-grid-2 compact-grid">
-            <ApplicationCard
-              v-for="application in activeApplications"
-              :key="application.title"
-              v-bind="application"
-              :show-highlight="false"
-            />
-          </div>
-        </section>
-
-        <section class="dashboard-section">
-          <div class="section-header">
-            <div class="title-area">
-              <h2>Closed Applications</h2>
-              <p class="subtitle">Past applications and completed hiring flows</p>
-            </div>
-          </div>
-          <div class="cards-grid-2 compact-grid">
-            <ApplicationCard
-              v-for="application in closedApplications"
-              :key="application.title"
-              v-bind="application"
-              :show-highlight="false"
-            />
-          </div>
-        </section>
-      </template>
-
-      <template v-else-if="activeTab === 2">
-        <SectionHero
-          eyebrow="Interviews"
-          title="Every upcoming interview in one place"
-          subtitle="Review unscheduled and scheduled interviews, then open the details when you are ready to prepare."
-        />
-
-        <section class="dashboard-section">
-          <div class="section-header">
-            <div class="title-area">
-              <h2>Upcoming Interviews</h2>
-              <p class="subtitle">Scheduled sessions and interviews that still need a time</p>
-            </div>
-          </div>
-          <div class="cards-list-vertical">
-            <InterviewCard
-              v-for="interview in interviews"
-              :key="`${interview.title}-${interview.date}-${interview.time}`"
-              v-bind="interview"
-            />
-          </div>
-        </section>
-      </template>
-
-      <template v-else-if="activeTab === 3">
-        <SectionHero
-          eyebrow="Saved Jobs"
-          title="Your bookmarked roles, all in one place"
-          subtitle="Compare the roles you've saved, revisit the job details, and apply whenever you're ready."
-        />
-
-        <section class="dashboard-section">
-          <div class="section-header">
-            <div class="title-area">
-              <h2>Saved Roles</h2>
-              <p class="subtitle">Roles you've bookmarked to review and apply to later</p>
-            </div>
-          </div>
-          <div class="saved-jobs-grid">
-            <JobCard
-              v-for="job in savedJobs"
-              :key="job.jobId"
-              v-bind="job"
-            />
-          </div>
-        </section>
-      </template>
-
-      <template v-else-if="activeTab === 4">
-        <ProfileInfoView />
-      </template>
-
-      <template v-else-if="activeTab === 5">
-        <JobAlertsView />
-      </template>
-
-      <template v-else-if="activeTab === 6">
-        <AccountSettingsView />
-      </template>
-
-      <template v-else-if="activeTab === 7">
-        <ExternalLoginView />
-      </template>
-
-      <template v-else>
-        <section class="placeholder-section">
-          <div class="placeholder-card">
-            <span class="widget-label">Coming Next</span>
-            <h2 class="placeholder-title">{{ tabItems[activeTab].label }}</h2>
-            <p class="placeholder-text">This section has not been built yet. The Dashboard, Applications, and Interviews experiences are ready to explore in the current prototype.</p>
-            <Button label="Back to Dashboard" severity="secondary" outlined @click="activeTab = 0">
-              <template #icon>
-                <AppIcon name="arrow-left" />
-              </template>
-            </Button>
-          </div>
-        </section>
-      </template>
+      <div v-if="!isMobile" :id="getPanelId(activeTab)" role="tabpanel" :aria-labelledby="getTabId(activeTab)">
+        <component :is="getTabComponent(activeTab)" v-bind="getTabProps(activeTab)" @navigate="handleNavigate" />
       </div>
+
+      <Accordion v-else :activeIndex="activeTab" class="mobile-main-accordion" @tab-open="onMobileAccordionOpen">
+        <AccordionTab v-for="(item, index) in tabItems" :key="item.label">
+          <template #header>
+            <div class="mobile-main-header">
+              <span>{{ item.label }}</span>
+              <span v-if="item.badge" class="top-nav-tab-badge">{{ item.badge }}</span>
+            </div>
+          </template>
+          <component :is="getTabComponent(index)" v-bind="getTabProps(index)" @navigate="handleNavigate" />
+        </AccordionTab>
+      </Accordion>
     </main>
 
     <div class="state-toggle-btn">
@@ -341,20 +60,19 @@
 </template>
 
 <script setup>
-import { nextTick, ref } from 'vue';
-
-import JobCard from './components/JobCard.vue';
-import InterviewCard from './components/InterviewCard.vue';
-import ApplicationCard from './components/ApplicationCard.vue';
-import InfoChip from './components/InfoChip.vue';
-import OnboardingWidget from './components/OnboardingWidget.vue';
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import Accordion from 'primevue/accordion';
+import AccordionTab from 'primevue/accordiontab';
 import ProfileInfoView from './components/ProfileInfoView.vue';
 import JobAlertsView from './components/JobAlertsView.vue';
 import AccountSettingsView from './components/AccountSettingsView.vue';
 import ExternalLoginView from './components/ExternalLoginView.vue';
-import SectionHero from './components/SectionHero.vue';
 import AppIcon from './components/AppIcon.vue';
 import Button from 'primevue/button';
+import DashboardOverviewView from './components/DashboardOverviewView.vue';
+import ApplicationsSectionView from './components/ApplicationsSectionView.vue';
+import InterviewsSectionView from './components/InterviewsSectionView.vue';
+import SavedJobsSectionView from './components/SavedJobsSectionView.vue';
 
 const tabItems = [
   { label: 'Dashboard', icon: '' },
@@ -477,6 +195,7 @@ const closedApplications = [
 const isEmptyState = ref(false);
 const activeTab = ref(0);
 const tabRefs = [];
+const isMobile = ref(false);
 
 const getTabId = (index) => `dashboard-tab-${index}`;
 const getPanelId = (index) => `dashboard-panel-${index}`;
@@ -495,6 +214,14 @@ const activateTab = (index, { moveFocus = false } = {}) => {
   if (moveFocus) {
     nextTick(() => focusTab(index));
   }
+};
+
+const handleNavigate = (index) => {
+  activateTab(index);
+};
+
+const onMobileAccordionOpen = (event) => {
+  activeTab.value = event.index;
 };
 
 const onTabKeydown = (event) => {
@@ -526,6 +253,50 @@ const onTabKeydown = (event) => {
 
   activateTab(nextIndex, { moveFocus: true });
 };
+
+const getTabComponent = (index) => {
+  switch (index) {
+    case 0: return DashboardOverviewView;
+    case 1: return ApplicationsSectionView;
+    case 2: return InterviewsSectionView;
+    case 3: return SavedJobsSectionView;
+    case 4: return ProfileInfoView;
+    case 5: return JobAlertsView;
+    case 6: return AccountSettingsView;
+    case 7: return ExternalLoginView;
+    default: return DashboardOverviewView;
+  }
+};
+
+const getTabProps = (index) => {
+  switch (index) {
+    case 0:
+      return { isEmptyState: isEmptyState.value, savedJobs, interviews, dashboardApplications };
+    case 1:
+      return { activeApplications, closedApplications };
+    case 2:
+      return { interviews };
+    case 3:
+      return { savedJobs };
+    default:
+      return {};
+  }
+};
+
+const mobileQuery = typeof window !== 'undefined' ? window.matchMedia('(max-width: 768px)') : null;
+
+const syncViewport = () => {
+  isMobile.value = mobileQuery?.matches ?? false;
+};
+
+onMounted(() => {
+  syncViewport();
+  mobileQuery?.addEventListener?.('change', syncViewport);
+});
+
+onBeforeUnmount(() => {
+  mobileQuery?.removeEventListener?.('change', syncViewport);
+});
 </script>
 
 <style scoped>
@@ -637,6 +408,12 @@ const onTabKeydown = (event) => {
   z-index: 1000;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border-radius: 999px;
+}
+
+.mobile-main-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .main-content {
@@ -1030,6 +807,32 @@ const onTabKeydown = (event) => {
     box-shadow: none;
   }
 
+  .mobile-main-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mobile-main-accordion :deep(.p-accordion-tab) {
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .mobile-main-accordion :deep(.p-accordion-header-link) {
+    min-height: 56px;
+    padding: 16px 18px;
+    border: none;
+    color: var(--text-strong);
+    background: #fff;
+  }
+
+  .mobile-main-accordion :deep(.p-accordion-content) {
+    border: none;
+    padding: 0 16px 16px;
+  }
+
   .cards-grid-3,
   .cards-grid-2,
   .saved-jobs-grid {
@@ -1102,5 +905,117 @@ const onTabKeydown = (event) => {
   .placeholder-card {
     padding: 24px;
   }
+}
+</style>
+<style>
+.main-content .hero-widgets {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+}
+
+.main-content .widget-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-default);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 32px;
+}
+
+.main-content .widget-cv {
+  min-height: 220px;
+  border: 1px solid transparent;
+  background: linear-gradient(var(--bg-default), var(--bg-default)) padding-box, linear-gradient(135deg, #ff914d, #b983ff) border-box;
+}
+
+.main-content .widget-label {
+  color: #ff7640;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.main-content .widget-title {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--text-strong);
+  margin: 0 0 12px 0;
+}
+
+.main-content .widget-text {
+  font-size: 16px;
+  color: var(--text-default);
+  line-height: 24px;
+  margin: 0 0 24px 0;
+}
+
+.main-content .mt-auto { margin-top: auto; }
+.main-content .dashboard-section { display: flex; flex-direction: column; gap: 0; }
+.main-content .dashboard-section + .dashboard-section { margin-top: 36px; }
+.main-content .section-hero + .dashboard-section { margin-top: 44px; }
+.main-content .onboarding-widget + .dashboard-section { margin-top: 48px; }
+.main-content .section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; }
+.main-content .title-area h1,
+.main-content .title-area h2 { font-size: var(--type-title-section-size); line-height: var(--type-title-section-line); font-weight: 600; color: var(--text-strong); margin: 0 0 4px 0; }
+.main-content .subtitle { font-size: var(--type-meta-size); line-height: var(--type-meta-line); color: var(--text-subtle); margin: 0; }
+.main-content .cards-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.main-content .cards-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.main-content .compact-grid { gap: 16px; }
+.main-content .cards-list-vertical { display: flex; flex-direction: column; gap: 16px; }
+.main-content .events-list { display: flex; flex-direction: column; gap: 24px; }
+.main-content .saved-jobs-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.main-content .placeholder-section { padding: 80px 0; }
+.main-content .placeholder-card { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; max-width: 720px; padding: 40px; border-radius: 20px; border: 1px dashed var(--border-color); background-color: #fbfcfd; }
+.main-content .placeholder-title { font-size: 32px; color: var(--text-strong); margin: 0; }
+.main-content .placeholder-text { font-size: 16px; line-height: 26px; color: var(--text-default); margin: 0; }
+.main-content .empty-state-container { display: flex; justify-content: center; align-items: center; padding: 80px 20px; background-color: var(--bg-default); border: 1px dashed var(--border-color); border-radius: 16px; text-align: center; }
+.main-content .empty-state-content { max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+.main-content .icon-wrapper { width: 80px; height: 80px; background-color: #f0fdf9; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+.main-content .icon-wrapper svg { width: 36px; height: 36px; color: var(--primary-bg); }
+.main-content .empty-title { font-size: 28px; font-weight: 700; color: var(--text-strong); margin: 0; }
+.main-content .empty-subtitle { font-size: 16px; line-height: 24px; color: var(--text-default); margin: 0; }
+.main-content .empty-actions { display: flex; gap: 16px; margin-top: 8px; }
+.main-content .popular-searches { margin-top: 32px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.main-content .searches-label { font-size: 14px; font-weight: 600; color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.5px; }
+.main-content .search-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.main-content .event-card { display: flex; background-color: var(--bg-default); border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; min-height: 200px; }
+.main-content .event-image { flex-shrink: 0; width: 240px; }
+.main-content .event-image img { width: 100%; height: 100%; object-fit: cover; }
+.main-content .event-content { padding: 24px; display: flex; flex-direction: column; flex-grow: 1; gap: 16px; }
+.main-content .event-header { display: flex; align-items: flex-start; }
+.main-content .event-title-group { display: flex; flex-direction: column; gap: 10px; }
+.main-content .event-title, .main-content .event-description { margin: 0; }
+.main-content .event-details { display: flex; flex-direction: column; gap: 8px; }
+.main-content .event-details-inline { flex-direction: row; flex-wrap: wrap; gap: 10px; }
+.main-content .event-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.main-content .event-tag { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 6px 10px; border-radius: 999px; background-color: #f6f8fb; border: 1px solid var(--border-color); color: var(--text-strong); }
+.main-content .event-actions { margin-top: auto; display: flex; gap: 16px; }
+
+@media (max-width: 1024px) {
+  .main-content .cards-grid-3,
+  .main-content .cards-grid-2,
+  .main-content .saved-jobs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 768px) {
+  .main-content .dashboard-section + .dashboard-section { margin-top: 28px; }
+  .main-content .section-hero + .dashboard-section { margin-top: 32px; }
+  .main-content .onboarding-widget + .dashboard-section { margin-top: 36px; }
+  .main-content .cards-grid-3,
+  .main-content .cards-grid-2,
+  .main-content .saved-jobs-grid { grid-template-columns: 1fr; gap: 16px; }
+  .main-content .event-actions,
+  .main-content .empty-actions { flex-direction: column; width: 100%; }
+  .main-content .event-card { flex-direction: column; min-height: auto; }
+  .main-content .event-image { width: 100%; height: 150px; }
+  .main-content .event-content { padding: 20px; }
+  .main-content .event-header,
+  .main-content .section-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+  .main-content .event-details-inline { flex-direction: column; }
+  .main-content .widget-card { padding: 20px; }
+  .main-content .title-area h2 { font-size: 20px; }
+  .main-content .title-area .subtitle { font-size: 14px; margin-top: 4px; }
+  .main-content .placeholder-card { padding: 24px; }
 }
 </style>
