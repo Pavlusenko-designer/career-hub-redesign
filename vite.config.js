@@ -3,6 +3,6 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/career-hub-redesign/',
+  base: process.env.VITE_BASE_PATH || '/',
   plugins: [vue()],
 })
