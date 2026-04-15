@@ -23,13 +23,25 @@
           <template v-if="editingAlertId === alert.id">
             <div class="alert-edit-row">
               <InputText v-model="editingName" class="alert-name-input" />
-              <Button icon="pi pi-check" text rounded severity="secondary" class="edit-state-btn confirm-btn" aria-label="Save alert name" @click="saveAlertName(alert.id)" />
-              <Button icon="pi pi-times" text rounded severity="secondary" class="edit-state-btn cancel-btn" aria-label="Cancel alert editing" @click="cancelEdit" />
+              <Button text rounded severity="secondary" class="edit-state-btn confirm-btn" aria-label="Save alert name" @click="saveAlertName(alert.id)">
+                <template #icon>
+                  <AppIcon name="check" />
+                </template>
+              </Button>
+              <Button text rounded severity="secondary" class="edit-state-btn cancel-btn" aria-label="Cancel alert editing" @click="cancelEdit">
+                <template #icon>
+                  <AppIcon name="times" />
+                </template>
+              </Button>
             </div>
           </template>
           <template v-else>
             <span class="alert-name">{{ alert.name }}</span>
-            <Button icon="pi pi-pencil" text rounded severity="secondary" class="edit-alert-btn" aria-label="Edit alert name" @click="startEdit(alert)" />
+            <Button text rounded severity="secondary" class="edit-alert-btn" aria-label="Edit alert name" @click="startEdit(alert)">
+              <template #icon>
+                <AppIcon name="pencil" />
+              </template>
+            </Button>
           </template>
         </div>
 
@@ -58,6 +70,7 @@ import { ref } from 'vue';
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
 import InputText from 'primevue/inputtext';
+import AppIcon from './AppIcon.vue';
 import SectionHero from './SectionHero.vue';
 
 const frequencyOptions = [
@@ -102,7 +115,7 @@ const saveAlertName = (alertId) => {
 .job-alerts-page {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 40px;
 }
 
 .alerts-table-card {
@@ -208,6 +221,10 @@ const saveAlertName = (alertId) => {
 }
 
 @media (max-width: 768px) {
+  .job-alerts-page {
+    gap: 28px;
+  }
+
   .alerts-table-card {
     padding: 12px 16px;
   }

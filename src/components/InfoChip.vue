@@ -1,15 +1,22 @@
 <template>
   <div class="info-chip ds-chip-text">
-    <i :class="icon"></i>
+    <AppIcon v-if="iconName" :name="iconName" class="chip-icon" />
+    <i v-else :class="icon" aria-hidden="true"></i>
     <span>{{ label }}</span>
   </div>
 </template>
 
 <script setup>
+import AppIcon from './AppIcon.vue';
+
 defineProps({
   icon: {
     type: String,
-    required: true
+    default: ''
+  },
+  iconName: {
+    type: String,
+    default: ''
   },
   label: {
     type: String,
@@ -28,7 +35,8 @@ defineProps({
   color: var(--text-strong);
 }
 
-.info-chip i {
+.info-chip i,
+.chip-icon {
   color: var(--text-subtle);
   font-size: 12px;
 }

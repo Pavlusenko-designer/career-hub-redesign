@@ -7,33 +7,36 @@
       </div>
       <div class="header-actions">
         <Tag :value="statusConfig.label" :class="['status-tag', statusClass]" />
-        <Button icon="pi pi-ellipsis-v" text rounded severity="secondary" class="menu-btn" @click="toggleMenu" />
+        <Button text rounded severity="secondary" class="menu-btn" aria-label="Application actions" @click="toggleMenu">
+          <template #icon>
+            <AppIcon name="ellipsis-v" />
+          </template>
+        </Button>
         <Menu ref="menu" :model="menuItems" :popup="true" />
       </div>
     </div>
 
     <div class="card-body">
       <div class="job-details">
-        <InfoChip icon="pi pi-sitemap" :label="department" />
-        <InfoChip icon="pi pi-map-marker" :label="location" />
-        <InfoChip icon="pi pi-briefcase" :label="jobId" />
+        <InfoChip icon-name="tag" :label="department" />
+        <InfoChip icon-name="map-marker" :label="location" />
+        <InfoChip icon-name="briefcase" :label="jobId" />
       </div>
 
       <p class="job-description ds-body">{{ description }}</p>
 
       <div v-if="showHighlight" class="application-highlight">
-        <i :class="statusConfig.highlightIcon"></i>
+        <AppIcon :name="statusConfig.highlightIcon" class="application-highlight-icon" />
         <span>{{ nextStepText }}</span>
       </div>
     </div>
 
     <div class="card-footer">
-      <Button
-        label="View Details"
-        icon="pi pi-arrow-right"
-        severity="primary"
-        class="action-btn"
-      />
+      <Button label="View Details" severity="primary" class="action-btn">
+        <template #icon>
+          <AppIcon name="arrow-right" />
+        </template>
+      </Button>
     </div>
   </div>
 </template>
@@ -44,6 +47,7 @@ import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import Menu from 'primevue/menu';
 import InfoChip from './InfoChip.vue';
+import AppIcon from './AppIcon.vue';
 
 const props = defineProps({
   title: {
@@ -95,37 +99,37 @@ const props = defineProps({
 const STATUS_CONFIG = {
   submitted: {
     label: 'Submitted',
-    highlightIcon: 'pi pi-send',
+    highlightIcon: 'arrow-right',
     defaultNextStep: 'Your application was received and is waiting for the hiring team to begin review.'
   },
   in_review: {
     label: 'In Review',
-    highlightIcon: 'pi pi-search',
+    highlightIcon: 'search',
     defaultNextStep: 'Hiring team is reviewing your portfolio and role alignment.'
   },
   assessment: {
     label: 'Assessment',
-    highlightIcon: 'pi pi-bolt',
+    highlightIcon: 'calendar-plus',
     defaultNextStep: 'Complete the take-home exercise before the deadline to stay in process.'
   },
   interview: {
     label: 'Interview',
-    highlightIcon: 'pi pi-calendar',
+    highlightIcon: 'calendar',
     defaultNextStep: 'Choose a time slot and confirm your interview details.'
   },
   final_round: {
     label: 'Final Round',
-    highlightIcon: 'pi pi-star',
+    highlightIcon: 'calendar-plus',
     defaultNextStep: 'Your final panel is ready. Review the agenda and interviewer notes.'
   },
   offer: {
     label: 'Offer',
-    highlightIcon: 'pi pi-check-circle',
+    highlightIcon: 'calendar-plus',
     defaultNextStep: 'An offer is ready for review. Confirm compensation and benefits before signing.'
   },
   rejected: {
     label: 'Closed',
-    highlightIcon: 'pi pi-lock',
+    highlightIcon: 'briefcase',
     defaultNextStep: 'This role is closed, but you can still review the application details and history.'
   }
 };
@@ -237,7 +241,7 @@ const toggleMenu = (event) => {
   line-height: 19px;
 }
 
-.application-highlight i {
+.application-highlight-icon {
   margin-top: 2px;
   color: var(--primary-bg);
 }

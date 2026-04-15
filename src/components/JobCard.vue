@@ -2,22 +2,30 @@
   <div class="job-card">
     <div class="card-header">
       <h3 class="job-title ds-title-card">{{ title }}</h3>
-      <Button icon="pi pi-heart-fill" class="p-button-rounded p-button-text favorite-btn" />
+      <Button class="p-button-rounded p-button-text favorite-btn" aria-label="Save job">
+        <template #icon>
+          <AppIcon name="heart-fill" />
+        </template>
+      </Button>
     </div>
     
     <div class="card-body">
       <div class="job-details">
-        <InfoChip icon="pi pi-tag" :label="category" />
-        <InfoChip icon="pi pi-map-marker" :label="location" />
-        <InfoChip icon="pi pi-clock" :label="workType" />
-        <InfoChip icon="pi pi-briefcase" :label="jobId" />
+        <InfoChip icon-name="tag" :label="category" />
+        <InfoChip icon-name="map-marker" :label="location" />
+        <InfoChip icon-name="clock" :label="workType" />
+        <InfoChip icon-name="briefcase" :label="jobId" />
       </div>
 
       <p class="job-description ds-body">{{ description }}</p>
     </div>
     
     <div class="card-footer">
-      <Button label="Apply Now" icon="pi pi-arrow-right" severity="primary" class="apply-btn" />
+      <Button label="Apply Now" severity="primary" class="apply-btn">
+        <template #icon>
+          <AppIcon name="arrow-right" />
+        </template>
+      </Button>
     </div>
   </div>
 </template>
@@ -25,6 +33,7 @@
 <script setup>
 import Button from 'primevue/button';
 import InfoChip from './InfoChip.vue';
+import AppIcon from './AppIcon.vue';
 
 defineProps({
   title: {

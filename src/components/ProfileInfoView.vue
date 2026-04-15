@@ -6,7 +6,12 @@
       subtitle="Manage your personal details, resume, and job preferences so applications are faster and recommendations stay relevant."
     />
 
-    <TabView class="profile-tabs">
+    <TabView
+      class="profile-tabs"
+      :activeIndex="profileTabIndex"
+      scrollable
+      @tab-change="onProfileTabChange"
+    >
       <TabPanel header="Contact Information">
         <div class="panel-stack">
           <section class="form-card">
@@ -67,6 +72,7 @@
                     filter
                     filterPlaceholder="Search countries..."
                     class="phone-code"
+                    aria-label="Country calling code"
                   >
                     <template #value="{ value, placeholder }">
                       <div v-if="value" class="phone-option phone-option-selected">
@@ -177,15 +183,17 @@
             </div>
 
             <div class="field preferences-experience-field">
-              <label for="experience-range">Relevant years of experience</label>
+              <fieldset class="field-group">
+                <legend id="experience-range">Relevant years of experience</legend>
               <SelectButton
-                id="experience-range"
+                aria-labelledby="experience-range"
                 v-model="preferencesDraft.experienceRange"
                 :options="experienceOptions"
                 optionLabel="label"
                 optionValue="value"
                 class="experience-select"
               />
+              </fieldset>
               <div class="checkbox-row checkbox-row-plain career-start-row">
                 <Checkbox v-model="preferencesDraft.startingCareer" inputId="starting-career" :binary="true" />
                 <label for="starting-career">Just starting my career</label>
@@ -212,16 +220,17 @@
                   <p>Keep your availability up-to-date to get matched with the best jobs.</p>
                 </div>
 
-                <div class="availability-section">
-                  <label class="availability-label">Which months are you available to work?</label>
+                <fieldset class="availability-section availability-group">
+                  <legend id="availability-months-label" class="availability-label">Which months are you available to work?</legend>
                   <SelectButton
                     v-model="availabilityDraft.months"
                     :options="monthOptions"
                     multiple
                     unselectable
+                    aria-labelledby="availability-months-label"
                     class="availability-select availability-select-months"
                   />
-                </div>
+                </fieldset>
 
                 <div class="availability-divider"></div>
 
@@ -244,14 +253,15 @@
                   </div>
                 </div>
 
-                <div class="availability-section availability-section-days">
-                  <label class="availability-label">Select days of the week you are available</label>
+                <fieldset class="availability-section availability-section-days availability-group">
+                  <legend id="availability-days-label" class="availability-label">Select days of the week you are available</legend>
                   <div class="availability-select-row availability-select-row-split">
                     <SelectButton
                       v-model="availabilityDraft.days"
                       :options="fullWeekPrimary"
                       multiple
                       unselectable
+                      aria-labelledby="availability-days-label"
                       class="availability-select availability-select-days availability-select-4"
                     />
                     <span class="availability-inline-divider" aria-hidden="true"></span>
@@ -260,23 +270,25 @@
                       :options="fullWeekWeekend"
                       multiple
                       unselectable
+                      aria-labelledby="availability-days-label"
                       class="availability-select availability-select-days availability-select-3"
                     />
                   </div>
-                </div>
+                </fieldset>
 
                 <div class="availability-divider"></div>
 
-                <div class="availability-section availability-section-days">
-                  <label class="availability-label">Select weekdays you are available</label>
+                <fieldset class="availability-section availability-section-days availability-group">
+                  <legend id="availability-weekdays-label" class="availability-label">Select weekdays you are available</legend>
                   <SelectButton
                     v-model="availabilityDraft.weekdays"
                     :options="weekdayOptions"
                     multiple
                     unselectable
+                    aria-labelledby="availability-weekdays-label"
                     class="availability-select availability-select-days availability-select-4"
                   />
-                </div>
+                </fieldset>
 
                 <div class="availability-divider"></div>
 
@@ -299,16 +311,17 @@
                   </div>
                 </div>
 
-                <div class="availability-section availability-section-days">
-                  <label class="availability-label">Select weekend days you are available</label>
+                <fieldset class="availability-section availability-section-days availability-group">
+                  <legend id="availability-weekend-days-label" class="availability-label">Select weekend days you are available</legend>
                   <SelectButton
                     v-model="availabilityDraft.weekendDays"
                     :options="weekendOptions"
                     multiple
                     unselectable
+                    aria-labelledby="availability-weekend-days-label"
                     class="availability-select availability-select-days availability-select-3"
                   />
-                </div>
+                </fieldset>
 
                 <div class="availability-divider"></div>
 
@@ -333,8 +346,8 @@
 
                 <div class="availability-divider"></div>
 
-                <div class="availability-section">
-                  <label class="availability-label">Are you available to work on public holidays?</label>
+                <fieldset class="availability-section availability-group">
+                  <legend class="availability-label">Are you available to work on public holidays?</legend>
                   <div class="availability-radio-row">
                     <div class="availability-radio-item">
                       <RadioButton v-model="availabilityDraft.publicHolidays" inputId="public-holidays-yes" name="publicHolidays" :value="true" />
@@ -345,19 +358,27 @@
                       <label for="public-holidays-no">No</label>
                     </div>
                   </div>
-                </div>
+                </fieldset>
               </div>
             </div>
 
             <div class="availability-footer">
               <Button
-                label="Clear Availability"
-                icon="pi pi-trash"
                 severity="secondary"
                 outlined
                 class="availability-clear-btn"
                 @click="clearAvailability"
-              />
+              >
+                <span class="availability-clear-content">
+                  <svg class="availability-clear-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M9 3.75h6a.75.75 0 0 1 .75.75v1.5H19.5a.75.75 0 0 1 0 1.5h-.69l-.63 10.114A2.25 2.25 0 0 1 15.934 20.25H8.066a2.25 2.25 0 0 1-2.245-2.136L5.19 7.5H4.5a.75.75 0 0 1 0-1.5h3.75V4.5A.75.75 0 0 1 9 3.75Zm5.25 2.25v-.75h-4.5V6h4.5Zm-6.928 1.5.595 10.021a.75.75 0 0 0 .749.729h7.868a.75.75 0 0 0 .749-.729l.595-10.02H7.322Zm2.553 2.25a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5a.75.75 0 0 1 .75-.75Zm4.5 0a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5a.75.75 0 0 1 .75-.75Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  <span>Clear Availability</span>
+                </span>
+              </Button>
 
               <div class="availability-footer-actions">
                 <Button label="Discard Changes" severity="secondary" outlined @click="resetAvailability" />
@@ -376,23 +397,24 @@
               <p>Add and maintain your recent aircraft hours using the same profile workflow as the rest of this section.</p>
             </div>
 
-            <div class="pilot-table">
-              <div class="pilot-table-head">
-                <div class="pilot-head-cell">Aircraft type</div>
-                <div class="pilot-head-cell">Date Last Flown</div>
-                <div class="pilot-head-cell">Total Fixed-Wing Turbine Time (In Hrs)</div>
-                <div class="pilot-head-cell">Fixed-Wing Turbine Time in last 60 Months (In Hrs)</div>
-                <div class="pilot-head-cell">Total Fixed-Wing PIC Turbine Time (In Hrs)</div>
-                <div class="pilot-head-cell">Total Fixed-Wing SIC Turbine Time (In Hrs)</div>
-                <div class="pilot-head-cell pilot-head-cell-actions"></div>
+            <div class="pilot-table" role="table" aria-label="Pilot flight hours">
+              <div class="pilot-table-head" role="rowgroup">
+                <div class="pilot-head-cell" role="columnheader">Aircraft type</div>
+                <div class="pilot-head-cell" role="columnheader">Date Last Flown</div>
+                <div class="pilot-head-cell" role="columnheader">Total Fixed-Wing Turbine Time (In Hrs)</div>
+                <div class="pilot-head-cell" role="columnheader">Fixed-Wing Turbine Time in last 60 Months (In Hrs)</div>
+                <div class="pilot-head-cell" role="columnheader">Total Fixed-Wing PIC Turbine Time (In Hrs)</div>
+                <div class="pilot-head-cell" role="columnheader">Total Fixed-Wing SIC Turbine Time (In Hrs)</div>
+                <div class="pilot-head-cell pilot-head-cell-actions" role="columnheader">Actions</div>
               </div>
 
               <div
                 v-for="(row, index) in pilotCredentialsDraft"
                 :key="row.id"
                 class="pilot-table-row"
+                role="row"
               >
-                <div class="pilot-cell">
+                <div class="pilot-cell" role="cell">
                   <Dropdown
                     v-model="row.aircraftType"
                     :options="aircraftOptions"
@@ -402,7 +424,7 @@
                     class="pilot-field"
                   />
                 </div>
-                <div class="pilot-cell">
+                <div class="pilot-cell" role="cell">
                   <Calendar
                     v-model="row.dateLastFlown"
                     dateFormat="mm/dd/yy"
@@ -412,25 +434,26 @@
                     class="pilot-field"
                   />
                 </div>
-                <div class="pilot-cell">
+                <div class="pilot-cell" role="cell">
                   <InputText v-model="row.totalFixedWingTurbineTime" class="pilot-field" />
                 </div>
-                <div class="pilot-cell">
+                <div class="pilot-cell" role="cell">
                   <InputText v-model="row.fixedWingTurbineLast60Months" class="pilot-field" />
                 </div>
-                <div class="pilot-cell">
+                <div class="pilot-cell" role="cell">
                   <InputText v-model="row.totalPicTurbineTime" class="pilot-field" />
                 </div>
-                <div class="pilot-cell">
+                <div class="pilot-cell" role="cell">
                   <InputText v-model="row.totalSicTurbineTime" class="pilot-field" />
                 </div>
-                <div class="pilot-cell pilot-cell-actions">
+                <div class="pilot-cell pilot-cell-actions" role="cell">
                   <Button
                     icon="pi pi-trash"
                     text
                     rounded
                     severity="secondary"
                     class="pilot-delete-btn"
+                    :aria-label="`Remove aircraft row ${index + 1}`"
                     :disabled="pilotCredentialsDraft.length === 1"
                     @click="removePilotCredentialRow(index)"
                   />
@@ -592,9 +615,14 @@ const availabilityDraft = ref(clone(availabilityInitial));
 const pilotCredentialsSaved = ref(clone(pilotCredentialsInitial));
 const pilotCredentialsDraft = ref(clone(pilotCredentialsInitial));
 
+const profileTabIndex = ref(0);
 const resumeInput = ref(null);
 const resumeMenu = ref(null);
 const nextPilotCredentialId = ref(pilotCredentialsInitial.length + 1);
+
+const onProfileTabChange = (event) => {
+  profileTabIndex.value = event.index;
+};
 
 const getCountryByDialCode = (dialCode) => countryCodeOptions.find((option) => option.dialCode === dialCode);
 
@@ -786,14 +814,57 @@ const resumeMenuItems = [
 .profile-page {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 40px;
+}
+
+.profile-tabs :deep(.p-tabview-nav-container) {
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbfc 100%);
+}
+
+.profile-tabs :deep(.p-tabview-nav) {
+  gap: 6px;
+  padding: 8px;
+  border: none;
+  background: transparent;
+}
+
+.profile-tabs :deep(.p-tabview-nav li) {
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.profile-tabs :deep(.p-tabview-nav li .p-tabview-nav-link) {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-subtle);
+  white-space: nowrap;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.profile-tabs :deep(.p-tabview-nav li .p-tabview-nav-link:hover) {
+  background-color: #f3f7f8;
+  color: var(--text-strong);
+}
+
+.profile-tabs :deep(.p-tabview-nav li.p-highlight .p-tabview-nav-link) {
+  border-color: rgba(60, 109, 104, 0.2);
+  background-color: rgba(60, 109, 104, 0.08);
+  color: var(--text-strong);
 }
 
 .panel-stack {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding-top: 12px;
+  gap: 32px;
+  padding-top: 24px;
+}
+
+/* Remove PrimeVue's default panel padding — cards own their spacing */
+.profile-page :deep(.p-tabview-panels) {
+  padding: 0;
 }
 
 .form-card {
@@ -804,7 +875,7 @@ const resumeMenuItems = [
 }
 
 .card-heading {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .card-heading h2 {
@@ -837,6 +908,19 @@ const resumeMenuItems = [
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.field-group,
+.availability-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.field-group legend,
+.availability-group legend {
+  padding: 0;
 }
 
 .field label {
@@ -1239,6 +1323,18 @@ const resumeMenuItems = [
   padding: 10px 20px;
 }
 
+.availability-clear-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.availability-clear-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
 .availability-footer :deep(.p-button.p-button-outlined),
 .availability-footer :deep(.p-button.p-button-secondary) {
   border-color: #bdbdbd;
@@ -1532,9 +1628,44 @@ const resumeMenuItems = [
 }
 
 @media (max-width: 768px) {
-  .form-card,
+  .profile-page {
+    gap: 28px;
+  }
+
+  .profile-tabs :deep(.p-tabview-nav-container) {
+    border-radius: 14px;
+  }
+
+  .profile-tabs :deep(.p-tabview-nav) {
+    padding: 8px;
+  }
+
+  .profile-tabs :deep(.p-tabview-nav-btn) {
+    width: 2.25rem;
+    color: var(--text-subtle);
+  }
+
+  .profile-tabs :deep(.p-tabview-nav li .p-tabview-nav-link) {
+    padding: 0.75rem 0.95rem;
+    font-size: 13px;
+  }
+
+  .panel-stack {
+    gap: 24px;
+    padding-top: 16px;
+  }
+
+  .form-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
   .availability-card {
-    padding: 20px;
+    padding: 16px;
+  }
+
+  .card-heading {
+    margin-bottom: 16px;
   }
 
   .form-grid-4,
@@ -1543,10 +1674,13 @@ const resumeMenuItems = [
     grid-template-columns: 1fr;
   }
 
-  .availability-shell :deep(.availability-select-months.p-selectbutton),
+  .availability-shell :deep(.availability-select-months.p-selectbutton) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .availability-shell :deep(.availability-select-4.p-selectbutton),
   .availability-shell :deep(.availability-select-3.p-selectbutton) {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .phone-row {
@@ -1567,11 +1701,15 @@ const resumeMenuItems = [
   }
 
   .availability-header p {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .availability-field-short {
     max-width: none;
+  }
+
+  .availability-footer {
+    padding: 16px;
   }
 
   .pilot-table {

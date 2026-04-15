@@ -1,17 +1,37 @@
 <template>
   <div class="dashboard-container">
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
     <div class="top-nav">
-      <TabMenu :model="tabItems" :activeIndex="activeTab" @tab-change="onTabChange">
-        <template #item="{ item, props }">
-          <a v-bind="props.action" class="custom-tab-link">
-            <span v-bind="props.label" class="tab-label">{{ item.label }}</span>
-            <span v-if="item.badge" class="tab-custom-badge">{{ item.badge }}</span>
-          </a>
-        </template>
-      </TabMenu>
+      <nav aria-label="Dashboard sections">
+        <div class="top-nav-scroll" role="tablist" aria-orientation="horizontal" @keydown="onTabKeydown">
+          <button
+            v-for="(item, index) in tabItems"
+            :id="getTabId(index)"
+            :key="item.label"
+            :ref="(element) => setTabRef(element, index)"
+            type="button"
+            role="tab"
+            class="top-nav-tab"
+            :class="{ 'top-nav-tab-active': activeTab === index }"
+            :aria-selected="activeTab === index"
+            :aria-controls="getPanelId(index)"
+            :tabindex="activeTab === index ? 0 : -1"
+            @click="activateTab(index)"
+          >
+            <span class="top-nav-tab-label">{{ item.label }}</span>
+            <span v-if="item.badge" class="top-nav-tab-badge" :aria-label="`${item.badge} notifications`">{{ item.badge }}</span>
+          </button>
+        </div>
+      </nav>
     </div>
 
-    <main class="main-content">
+    <main id="main-content" class="main-content" tabindex="-1">
+      <div
+        :id="getPanelId(activeTab)"
+        role="tabpanel"
+        :aria-labelledby="getTabId(activeTab)"
+      >
       <template v-if="activeTab === 0">
         <OnboardingWidget />
 
@@ -22,7 +42,7 @@
                 <h2>Saved Jobs</h2>
                 <p class="subtitle">Jobs you've bookmarked for later</p>
               </div>
-              <a href="#" class="view-all-link" @click.prevent="activeTab = 3">View All <i class="pi pi-arrow-right"></i></a>
+              <a href="#" class="view-all-link" @click.prevent="activeTab = 3">View All <AppIcon name="arrow-right" /></a>
             </div>
             <div class="cards-grid-3">
               <JobCard
@@ -39,7 +59,7 @@
                 <h2>Upcoming Interviews</h2>
                 <p class="subtitle">Prepare for your scheduled interviews</p>
               </div>
-              <a href="#" class="view-all-link" @click.prevent="activeTab = 2">View All <i class="pi pi-arrow-right"></i></a>
+              <a href="#" class="view-all-link" @click.prevent="activeTab = 2">View All <AppIcon name="arrow-right" /></a>
             </div>
             <div class="cards-list-vertical">
               <InterviewCard
@@ -56,7 +76,7 @@
                 <h2>Active Applications</h2>
                 <p class="subtitle">Track your application progress</p>
               </div>
-              <a href="#" class="view-all-link" @click.prevent="activeTab = 1">View All <i class="pi pi-arrow-right"></i></a>
+              <a href="#" class="view-all-link" @click.prevent="activeTab = 1">View All <AppIcon name="arrow-right" /></a>
             </div>
             <div class="cards-grid-3">
               <ApplicationCard
@@ -87,7 +107,7 @@
                 <h2>Recommended Events</h2>
                 <p class="subtitle">Career events curated for you</p>
               </div>
-              <a href="#" class="view-all-link">View All <i class="pi pi-arrow-right"></i></a>
+              <a href="#" class="view-all-link">View All <AppIcon name="arrow-right" /></a>
             </div>
             <div class="events-list">
               <div class="event-card">
@@ -106,9 +126,9 @@
                   </div>
                   <p class="event-description ds-body">Connect with top tech companies and explore exciting career opportunities.</p>
                   <div class="event-details event-details-inline">
-                    <InfoChip icon="pi pi-calendar" label="Mar 15, 2026, 10:00 AM EST" />
-                    <InfoChip icon="pi pi-map-marker" label="Toronto, Canada" />
-                    <InfoChip icon="pi pi-users" label="150 attendees" />
+                    <InfoChip icon-name="calendar" label="Mar 15, 2026, 10:00 AM EST" />
+                    <InfoChip icon-name="map-marker" label="Toronto, Canada" />
+                    <InfoChip icon-name="users" label="150 attendees" />
                   </div>
                   <div class="event-actions">
                     <Button label="Learn More" severity="secondary" outlined />
@@ -133,9 +153,9 @@
                   </div>
                   <p class="event-description ds-body">Learn essential PM skills from industry leaders and network with peers</p>
                   <div class="event-details event-details-inline">
-                    <InfoChip icon="pi pi-calendar" label="Mar 20, 2026, 10:00 AM EST" />
-                    <InfoChip icon="pi pi-map-marker" label="Toronto, Canada" />
-                    <InfoChip icon="pi pi-users" label="24 attendees" />
+                    <InfoChip icon-name="calendar" label="Mar 20, 2026, 10:00 AM EST" />
+                    <InfoChip icon-name="map-marker" label="Toronto, Canada" />
+                    <InfoChip icon-name="users" label="24 attendees" />
                   </div>
                   <div class="event-actions">
                     <Button label="Learn More" severity="secondary" outlined />
@@ -150,14 +170,22 @@
         <div v-else class="empty-state-container">
           <div class="empty-state-content">
             <div class="icon-wrapper">
-              <i class="pi pi-compass"></i>
+              <AppIcon name="compass" />
             </div>
             <h2 class="empty-title">Your career journey starts here</h2>
             <p class="empty-subtitle">You haven't saved or applied to any jobs yet. Start exploring thousands of open roles that natively match your unique skills and preferences.</p>
 
             <div class="empty-actions">
-              <Button label="Explore Jobs" icon="pi pi-search" severity="primary" size="large" />
-              <Button label="Job Alerts" icon="pi pi-bell" severity="secondary" outlined size="large" />
+              <Button label="Explore Jobs" severity="primary" size="large">
+                <template #icon>
+                  <AppIcon name="search" />
+                </template>
+              </Button>
+              <Button label="Job Alerts" severity="secondary" outlined size="large">
+                <template #icon>
+                  <AppIcon name="bell" />
+                </template>
+              </Button>
             </div>
 
             <div class="popular-searches">
@@ -276,33 +304,44 @@
         <AccountSettingsView />
       </template>
 
+      <template v-else-if="activeTab === 7">
+        <ExternalLoginView />
+      </template>
+
       <template v-else>
         <section class="placeholder-section">
           <div class="placeholder-card">
             <span class="widget-label">Coming Next</span>
             <h2 class="placeholder-title">{{ tabItems[activeTab].label }}</h2>
             <p class="placeholder-text">This section has not been built yet. The Dashboard, Applications, and Interviews experiences are ready to explore in the current prototype.</p>
-            <Button label="Back to Dashboard" icon="pi pi-arrow-left" severity="secondary" outlined @click="activeTab = 0" />
+            <Button label="Back to Dashboard" severity="secondary" outlined @click="activeTab = 0">
+              <template #icon>
+                <AppIcon name="arrow-left" />
+              </template>
+            </Button>
           </div>
         </section>
       </template>
+      </div>
     </main>
 
     <div class="state-toggle-btn">
       <Button
         rounded
         severity="secondary"
-        icon="pi pi-sync"
         :label="isEmptyState ? 'Show Populated State' : 'Show Empty State'"
         @click="isEmptyState = !isEmptyState"
-      />
+      >
+        <template #icon>
+          <AppIcon name="sync" />
+        </template>
+      </Button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import TabMenu from 'primevue/tabmenu';
+import { nextTick, ref } from 'vue';
 
 import JobCard from './components/JobCard.vue';
 import InterviewCard from './components/InterviewCard.vue';
@@ -312,18 +351,21 @@ import OnboardingWidget from './components/OnboardingWidget.vue';
 import ProfileInfoView from './components/ProfileInfoView.vue';
 import JobAlertsView from './components/JobAlertsView.vue';
 import AccountSettingsView from './components/AccountSettingsView.vue';
+import ExternalLoginView from './components/ExternalLoginView.vue';
 import SectionHero from './components/SectionHero.vue';
+import AppIcon from './components/AppIcon.vue';
 import Button from 'primevue/button';
 
-const tabItems = ref([
+const tabItems = [
   { label: 'Dashboard', icon: '' },
   { label: 'Applications', icon: '', badge: 3 },
   { label: 'Interviews', icon: '', badge: 3 },
   { label: 'Saved Jobs', icon: '', badge: 4 },
   { label: 'Profile information', icon: '' },
   { label: 'Job Alerts', icon: '', badge: 2 },
-  { label: 'Account settings', icon: '' }
-]);
+  { label: 'Account settings', icon: '' },
+  { label: 'External Login', icon: '' }
+];
 
 const savedJobs = [
   {
@@ -434,9 +476,55 @@ const closedApplications = [
 
 const isEmptyState = ref(false);
 const activeTab = ref(0);
+const tabRefs = [];
 
-const onTabChange = (event) => {
-  activeTab.value = event.index;
+const getTabId = (index) => `dashboard-tab-${index}`;
+const getPanelId = (index) => `dashboard-panel-${index}`;
+
+const setTabRef = (element, index) => {
+  if (!element) return;
+  tabRefs[index] = element;
+};
+
+const focusTab = (index) => {
+  tabRefs[index]?.focus();
+};
+
+const activateTab = (index, { moveFocus = false } = {}) => {
+  activeTab.value = index;
+  if (moveFocus) {
+    nextTick(() => focusTab(index));
+  }
+};
+
+const onTabKeydown = (event) => {
+  const lastIndex = tabItems.length - 1;
+  let nextIndex = activeTab.value;
+
+  switch (event.key) {
+    case 'ArrowRight':
+    case 'ArrowDown':
+      event.preventDefault();
+      nextIndex = activeTab.value === lastIndex ? 0 : activeTab.value + 1;
+      break;
+    case 'ArrowLeft':
+    case 'ArrowUp':
+      event.preventDefault();
+      nextIndex = activeTab.value === 0 ? lastIndex : activeTab.value - 1;
+      break;
+    case 'Home':
+      event.preventDefault();
+      nextIndex = 0;
+      break;
+    case 'End':
+      event.preventDefault();
+      nextIndex = lastIndex;
+      break;
+    default:
+      return;
+  }
+
+  activateTab(nextIndex, { moveFocus: true });
 };
 </script>
 
@@ -446,27 +534,82 @@ const onTabChange = (event) => {
   background-color: var(--bg-default);
 }
 
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: 12px;
+  z-index: 200;
+  transform: translateY(-200%);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: var(--text-strong);
+  color: #fff;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 .top-nav {
   padding: 0 40px;
   border-bottom: 1px solid var(--border-color);
 }
 
-.custom-tab-link {
+.top-nav-scroll {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: 24px;
-  text-decoration: none;
-  cursor: pointer;
+  justify-content: center;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 0;
+  scrollbar-width: none;
 }
 
-.tab-label {
+.top-nav-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.top-nav-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 56px;
+  padding: 1rem 1rem 0.9rem;
+  background: transparent;
+  color: var(--text-subtle);
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.top-nav-tab:hover {
+  color: var(--text-strong);
+  background-color: #f6f8fb;
+}
+
+.top-nav-tab-active {
+  color: var(--text-strong);
+  background-color: #f7faf9;
+  border-bottom-color: var(--primary-bg);
+  box-shadow: inset 0 -1px 0 rgba(60, 109, 104, 0.12);
+}
+
+.top-nav-tab-label {
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
 }
 
-.tab-custom-badge {
+.top-nav-tab-active .top-nav-tab-label {
+  font-weight: 600;
+}
+
+.top-nav-tab-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -482,6 +625,11 @@ const onTabChange = (event) => {
   line-height: 1;
 }
 
+.top-nav-tab-active .top-nav-tab-badge {
+  background-color: rgba(60, 109, 104, 0.12);
+  border-color: rgba(60, 109, 104, 0.28);
+}
+
 .state-toggle-btn {
   position: fixed;
   bottom: 24px;
@@ -489,57 +637,6 @@ const onTabChange = (event) => {
   z-index: 1000;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border-radius: 999px;
-}
-
-:deep(.p-tabmenu-nav) {
-  justify-content: center;
-  gap: 4px;
-}
-
-:deep(.p-tabmenu .p-tabmenu-nav) {
-  border: none;
-  background: transparent;
-}
-
-:deep(.p-tabmenu .p-tabmenu-nav .p-menuitem) {
-  margin: 0;
-}
-
-:deep(.p-tabmenu-nav .p-menuitem-link) {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 56px;
-  padding: 1rem 1rem 0.9rem;
-  background: transparent;
-  color: var(--text-subtle);
-  border-bottom: 3px solid transparent;
-  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
-}
-
-:deep(.p-tabmenu-nav .p-menuitem-link:hover) {
-  color: var(--text-strong);
-  background-color: #f6f8fb;
-}
-
-:deep(.p-tabmenu-nav .p-highlight .p-menuitem-link) {
-  color: var(--text-strong);
-  background-color: #f7faf9;
-  border-bottom-color: var(--primary-bg);
-  box-shadow: inset 0 -1px 0 rgba(60, 109, 104, 0.12);
-}
-
-:deep(.p-tabmenu-nav .p-highlight .tab-label) {
-  font-weight: 600;
-}
-
-:deep(.p-tabmenu-nav .p-highlight .tab-custom-badge) {
-  background-color: rgba(60, 109, 104, 0.12);
-  border-color: rgba(60, 109, 104, 0.28);
-}
-
-:deep(.p-tabmenu-nav .p-highlight:hover .p-menuitem-link) {
-  background-color: #f7faf9;
 }
 
 .main-content {
@@ -601,13 +698,26 @@ const onTabChange = (event) => {
 .dashboard-section {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 0;
+}
+
+.dashboard-section + .dashboard-section {
+  margin-top: 36px;
+}
+
+.main-content :deep(.section-hero) + .dashboard-section {
+  margin-top: 44px;
+}
+
+.onboarding-widget + .dashboard-section {
+  margin-top: 48px;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
+  margin-bottom: 16px;
 }
 
 .title-area h1,
@@ -727,6 +837,12 @@ const onTabChange = (event) => {
 
 .icon-wrapper i {
   font-size: 36px;
+  color: var(--primary-bg);
+}
+
+.icon-wrapper :deep(svg) {
+  width: 36px;
+  height: 36px;
   color: var(--primary-bg);
 }
 
@@ -884,8 +1000,34 @@ const onTabChange = (event) => {
   }
 
   .top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 30;
     padding: 0 16px;
-    overflow-x: auto;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+  }
+
+  .top-nav-scroll {
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 8px 0;
+    scroll-snap-type: x proximity;
+  }
+
+  .top-nav-tab {
+    min-height: 44px;
+    padding: 0.75rem 0.95rem;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    border-bottom-width: 1px;
+    background-color: #fff;
+    scroll-snap-align: start;
+  }
+
+  .top-nav-tab-active {
+    border-color: rgba(60, 109, 104, 0.34);
+    box-shadow: none;
   }
 
   .cards-grid-3,
@@ -926,6 +1068,18 @@ const onTabChange = (event) => {
     flex-direction: column;
     gap: 12px;
     align-items: flex-start;
+  }
+
+  .dashboard-section + .dashboard-section {
+    margin-top: 28px;
+  }
+
+  .main-content :deep(.section-hero) + .dashboard-section {
+    margin-top: 32px;
+  }
+
+  .onboarding-widget + .dashboard-section {
+    margin-top: 36px;
   }
 
   .event-details-inline {

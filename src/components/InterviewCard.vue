@@ -9,17 +9,17 @@
 
       <div class="details-row">
         <div class="detail-item">
-          <i class="pi pi-calendar"></i>
+          <AppIcon name="calendar" />
           <span>{{ date }}</span>
         </div>
         <span class="separator">·</span>
         <div class="detail-item time-badge">
-          <i class="pi pi-clock"></i>
+          <AppIcon name="clock" />
           <span>{{ time }}</span>
         </div>
         <span class="separator">·</span>
         <div class="detail-item">
-          <i :class="formatIcon"></i>
+          <AppIcon :name="formatIcon" />
           <span>{{ format }}</span>
         </div>
         <span class="separator">·</span>
@@ -31,7 +31,11 @@
 
     <div class="actions-container">
       <Button label="View Details" class="p-button-secondary action-btn" outlined />
-      <Button v-if="primaryActionText" :label="primaryActionText" class="p-button-primary action-btn view-details-btn" :icon="primaryActionIcon" />
+      <Button v-if="primaryActionText" :label="primaryActionText" class="p-button-primary action-btn view-details-btn">
+        <template #icon>
+          <AppIcon :name="primaryActionIcon" />
+        </template>
+      </Button>
     </div>
   </div>
 </template>
@@ -41,6 +45,7 @@ import { computed } from 'vue';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import Avatar from 'primevue/avatar';
+import AppIcon from './AppIcon.vue';
 
 const props = defineProps({
   title: {
@@ -86,8 +91,8 @@ const statusClass = computed(() => `status-${props.status}`);
 
 const formatIcon = computed(() => {
   return props.format.toLowerCase().includes('google') || props.format.toLowerCase().includes('video')
-    ? 'pi pi-video'
-    : 'pi pi-map-marker';
+    ? 'video'
+    : 'map-marker';
 });
 
 const primaryActionText = computed(() => {
@@ -101,10 +106,10 @@ const primaryActionText = computed(() => {
 
 const primaryActionIcon = computed(() => {
   switch (props.status) {
-    case 'accepted': return 'pi pi-calendar-plus';
-    case 'in_progress': return 'pi pi-video';
+    case 'accepted': return 'calendar-plus';
+    case 'in_progress': return 'video';
     case 'not_started':
-    default: return 'pi pi-calendar-plus';
+    default: return 'calendar-plus';
   }
 });
 </script>
@@ -176,7 +181,7 @@ const primaryActionIcon = computed(() => {
   color: var(--text-subtle);
 }
 
-.detail-item i {
+.detail-item :deep(svg) {
   font-size: 12px;
 }
 
