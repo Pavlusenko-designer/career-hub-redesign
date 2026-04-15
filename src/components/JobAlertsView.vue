@@ -37,12 +37,14 @@
             </div>
           </template>
           <template v-else>
-            <span class="alert-name">{{ alert.name }}</span>
-            <Button text rounded severity="secondary" class="edit-alert-btn" aria-label="Edit alert name" @click="startEdit(alert)">
-              <template #icon>
-                <AppIcon name="pencil" />
-              </template>
-            </Button>
+            <div class="alert-name-row">
+              <Button text rounded severity="secondary" class="edit-alert-btn" aria-label="Edit alert name" @click="startEdit(alert)">
+                <template #icon>
+                  <AppIcon name="pencil" />
+                </template>
+              </Button>
+              <span class="alert-name">{{ alert.name }}</span>
+            </div>
           </template>
         </div>
 
@@ -59,9 +61,8 @@
 
         <div class="alert-actions-cell">
           <span class="mobile-field-label">Actions</span>
-          <a href="#" class="results-link" @click.prevent>View results</a>
-          <span class="actions-separator">|</span>
-          <a href="#" class="delete-link" @click.prevent>Delete alert</a>
+          <Button label="View results" severity="secondary" outlined class="alert-action-button" @click.prevent />
+          <Button label="Delete alert" severity="secondary" outlined class="alert-action-button alert-delete-button" @click.prevent />
         </div>
       </div>
     </section>
@@ -164,6 +165,13 @@ const saveAlertName = (alertId) => {
   color: var(--text-strong);
 }
 
+.alert-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
 .alert-edit-row {
   display: flex;
   align-items: center;
@@ -205,22 +213,6 @@ const saveAlertName = (alertId) => {
   align-items: center;
   gap: 12px;
   font-size: 14px;
-}
-
-.results-link {
-  color: #4338ca;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.delete-link {
-  color: #ef4444;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.actions-separator {
-  color: var(--border-color);
 }
 
 .mobile-field-label {
@@ -269,10 +261,38 @@ const saveAlertName = (alertId) => {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
+    width: 100%;
+  }
+
+  .alert-name-cell {
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .alert-name {
+    font-size: 20px;
+    line-height: 1.3;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .edit-alert-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: #fff;
+    flex: 0 0 auto;
+  }
+
+  .alert-frequency-cell {
+    gap: 10px;
+    align-items: stretch;
   }
 
   .alert-edit-row {
     flex-wrap: wrap;
+    width: 100%;
   }
 
   .alert-name-input {
@@ -281,11 +301,22 @@ const saveAlertName = (alertId) => {
   }
 
   .frequency-dropdown {
+    width: 100%;
     max-width: none;
   }
 
-  .actions-separator {
-    display: none;
+  .alert-actions-cell {
+    align-items: stretch;
+    gap: 12px;
   }
+
+  .alert-action-button {
+    width: 100%;
+  }
+}
+
+.alert-delete-button {
+  color: #ef4444 !important;
+  border-color: #ef4444 !important;
 }
 </style>

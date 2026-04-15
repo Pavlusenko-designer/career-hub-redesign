@@ -6,19 +6,6 @@
       <section class="dashboard-section">
         <div class="section-header">
           <div class="title-area">
-            <h2>Saved Jobs</h2>
-            <p class="subtitle">Jobs you've bookmarked for later</p>
-          </div>
-          <a href="#" class="view-all-link" @click.prevent="$emit('navigate', 3)">View All <AppIcon name="arrow-right" /></a>
-        </div>
-        <div class="cards-grid-3">
-          <JobCard v-for="job in savedJobs.slice(0, 3)" :key="job.jobId" v-bind="job" />
-        </div>
-      </section>
-
-      <section class="dashboard-section">
-        <div class="section-header">
-          <div class="title-area">
             <h2>Upcoming Interviews</h2>
             <p class="subtitle">Prepare for your scheduled interviews</p>
           </div>
@@ -39,6 +26,19 @@
         </div>
         <div class="cards-grid-3">
           <ApplicationCard v-for="application in dashboardApplications" :key="application.title" v-bind="application" :show-highlight="false" />
+        </div>
+      </section>
+
+      <section class="dashboard-section">
+        <div class="section-header">
+          <div class="title-area">
+            <h2>Saved Jobs</h2>
+            <p class="subtitle">Jobs you've bookmarked for later</p>
+          </div>
+          <a href="#" class="view-all-link" @click.prevent="$emit('navigate', 3)">View All <AppIcon name="arrow-right" /></a>
+        </div>
+        <div class="cards-grid-3">
+          <JobCard v-for="job in savedJobs.slice(0, 3)" :key="job.jobId" v-bind="job" />
         </div>
       </section>
 
