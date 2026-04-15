@@ -121,35 +121,32 @@
       </section>
     </template>
 
-    <div v-else class="empty-state-container">
-      <div class="empty-state-content">
-        <div class="icon-wrapper">
-          <AppIcon name="compass" />
-        </div>
-        <h2 class="empty-title">Your career journey starts here</h2>
-        <p class="empty-subtitle">You haven't saved or applied to any jobs yet. Start exploring thousands of open roles that natively match your unique skills and preferences.</p>
+    <div v-else class="empty-state-stack">
+      <div class="empty-state-container">
+        <div class="empty-state-content">
+          <div class="icon-wrapper">
+            <AppIcon name="compass" />
+          </div>
+          <h2 class="empty-title">Your career journey starts here</h2>
+          <p class="empty-subtitle">You haven't saved or applied to any jobs yet. Start exploring thousands of open roles that natively match your unique skills and preferences.</p>
 
-        <div class="empty-actions">
-          <Button label="Explore Jobs" severity="primary" size="large">
-            <template #icon>
-              <AppIcon name="search" />
-            </template>
-          </Button>
-          <Button label="Job Alerts" severity="secondary" outlined size="large">
-            <template #icon>
-              <AppIcon name="bell" />
-            </template>
-          </Button>
+          <div class="empty-actions">
+            <Button label="Explore Jobs" severity="primary" size="large">
+              <template #icon>
+                <AppIcon name="search" />
+              </template>
+            </Button>
+          </div>
         </div>
+      </div>
 
-        <div class="popular-searches">
-          <span class="searches-label">Popular Categories to Explore:</span>
-          <div class="search-tags">
-            <Button label="Product Design" rounded outlined severity="secondary" size="small" />
-            <Button label="Software Engineering" rounded outlined severity="secondary" size="small" />
-            <Button label="Marketing & Sales" rounded outlined severity="secondary" size="small" />
-            <Button label="Data Science" rounded outlined severity="secondary" size="small" />
-            <Button label="Customer Success" rounded outlined severity="secondary" size="small" />
+      <div class="empty-state-widget">
+        <div class="widget-card widget-cv">
+          <span class="widget-label">Recommended</span>
+          <h2 class="widget-title">Get matched!</h2>
+          <p class="widget-text">Upload your resume and see jobs that match your skills and experience.</p>
+          <div class="mt-auto">
+            <Button label="Search with CV" severity="primary" style="width: 100%" />
           </div>
         </div>
       </div>
@@ -175,3 +172,16 @@ defineProps({
 
 defineEmits(['navigate']);
 </script>
+
+<style scoped>
+.empty-state-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.empty-state-widget {
+  width: 100%;
+}
+</style>
