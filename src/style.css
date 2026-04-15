@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-default: #ffffff;
+  --bg-body: #ffffff; /* We'll use white for now, but can adjust if needed */
+  --text-default: #464f5e;
+  --text-strong: #353b46;
+  --text-subtle: #637085;
+
+  --type-title-hero-size: 30px;
+  --type-title-hero-line: 1.15;
+  --type-title-card-size: 18px;
+  --type-title-card-line: 24px;
+  --type-title-section-size: 20px;
+  --type-title-section-line: 28px;
+  --type-body-size: 16px;
+  --type-body-line: 24px;
+  --type-body-sm-size: 14px;
+  --type-body-sm-line: 22px;
+  --type-meta-size: 13px;
+  --type-meta-line: 18px;
+  --type-chip-size: 13px;
+  --type-chip-line: 18px;
+  
+  --border-color: #d1d5dc;
+  
+  /* Primary Button */
+  --primary-bg: #3c6d68;
+  --primary-text: #ffffff;
+  --primary-hover: #325a56;
+  
+  /* Secondary Button / Links */
+  --secondary-bg: #ffffff;
+  --secondary-border: #8c95a8;
+  --secondary-text: #2927b2;
+  --secondary-hover: #f0f0fa;
+  
+  --font-family-base: 'Poppins', sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family-base);
+  background-color: var(--bg-body);
+  color: var(--text-default);
+  -webkit-font-smoothing: antialiased;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="tab"]:focus-visible,
+.p-button:focus-visible,
+.p-inputtext:focus-visible,
+.p-dropdown:focus-visible,
+.p-selectbutton .p-button:focus-visible,
+.p-tabview-nav-link:focus-visible {
+  outline: 3px solid #0f766e;
+  outline-offset: 3px;
+}
+
+h1, h2, h3, h4, p {
+  margin: 0;
+}
+
+.ds-eyebrow {
+  display: inline-block;
+  color: #ff7640;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.ds-title-hero {
+  font-size: var(--type-title-hero-size);
+  line-height: var(--type-title-hero-line);
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.ds-title-section {
+  font-size: var(--type-title-section-size);
+  line-height: var(--type-title-section-line);
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.ds-title-card {
+  font-size: var(--type-title-card-size);
+  line-height: var(--type-title-card-line);
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.ds-body {
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  color: var(--text-default);
+}
+
+.ds-body-sm {
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--text-default);
+}
+
+.ds-meta {
+  font-size: var(--type-meta-size);
+  line-height: var(--type-meta-line);
+  color: var(--text-subtle);
+}
+
+.ds-chip-text {
+  font-size: var(--type-chip-size);
+  line-height: var(--type-chip-line);
+  font-weight: 500;
+  color: var(--text-strong);
+}
+
+/* Custom Overrides for PrimeVue to match specific design tokens */
+.p-button.p-button-primary {
+  background-color: var(--primary-bg) !important;
+  border-color: var(--primary-bg) !important;
+  color: var(--primary-text) !important;
+}
+
+.p-button.p-button-primary:hover {
+  background-color: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+}
+
+.p-button.p-button-secondary {
+  background-color: var(--secondary-bg) !important;
+  border-color: var(--secondary-border) !important;
+  color: var(--secondary-text) !important;
+}
+
+.p-button.p-button-secondary:hover {
+  background-color: var(--secondary-hover) !important;
+  border-color: var(--secondary-border) !important;
+}
+
+.p-button {
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.p-button.p-button-icon-only {
+  gap: 0;
+}
+
+.p-button .p-button-label {
+  flex: 0 0 auto;
+}
+
+.p-button .p-button-icon-left,
+.p-button .p-button-icon-right {
+  margin: 0;
+}
+
+/* Text Links */
+.view-all-link {
+  color: var(--secondary-text);
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s ease;
+}
+
+.view-all-link:hover {
+  color: var(--primary-bg);
+  text-decoration: underline;
+}
+
+.view-all-link i {
+  font-size: 12px;
+}
