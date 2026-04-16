@@ -88,6 +88,9 @@
       <path d="m4 20 4.5-1 9-9a2.1 2.1 0 0 0-3-3l-9 9L4 20Z" />
       <path d="m13.5 6.5 4 4" />
     </g>
+    <g v-else-if="name === 'chevron-down'">
+      <path d="m6 9 6 6 6-6" />
+    </g>
   </svg>
 </template>
 
@@ -118,7 +121,8 @@ const strokeIcons = new Set([
   'calendar-plus',
   'check',
   'times',
-  'pencil'
+  'pencil',
+  'chevron-down'
 ]);
 
 const mode = computed(() => (strokeIcons.has(props.name) ? 'stroke' : 'fill'));
