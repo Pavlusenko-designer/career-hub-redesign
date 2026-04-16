@@ -2,11 +2,11 @@
   <div class="dashboard-container">
     <a class="skip-link" href="#main-content">Skip to main content</a>
 
-    <div v-if="!isMobile" class="top-nav">
+    <div class="top-nav">
       <nav aria-label="Dashboard sections">
         <div class="top-nav-scroll" role="tablist" aria-orientation="horizontal" @keydown="onTabKeydown">
           <button
-            v-for="(item, index) in tabItems"
+            v-for="(item, index) in visibleTabs"
             :id="getTabId(index)"
             :key="item.label"
             :ref="(element) => setTabRef(element, index)"
@@ -22,26 +22,40 @@
             <span class="top-nav-tab-label">{{ item.label }}</span>
             <span v-if="item.badge" class="top-nav-tab-badge" :aria-label="`${item.badge} notifications`">{{ item.badge }}</span>
           </button>
+          
+          <template v-if="isMobile && moreMenuItems.length > 0">
+            <button
+              type="button"
+              class="top-nav-tab"
+              @click="toggleMoreMenu"
+              aria-haspopup="true"
+              aria-controls="more_menu"
+            >
+              <span class="top-nav-tab-label">More</span>
+              <AppIcon name="chevron-down" style="font-size: 14px; margin-left: 4px; color: inherit;" />
+            </button>
+            <Menu ref="moreMenu" id="more_menu" :model="moreMenuItems" :popup="true">
+              <template #item="{ item, props }">
+                <a v-bind="props.action" class="p-menuitem-link" style="display: flex; justify-content: space-between; width: 100%;">
+                  <span class="p-menuitem-text">{{ item.label }}</span>
+                  <span v-if="item.badge" class="top-nav-tab-badge" style="margin-left: 8px;">{{ item.badge }}</span>
+                </a>
+              </template>
+            </Menu>
+          </template>
         </div>
       </nav>
     </div>
 
     <main id="main-content" class="main-content" tabindex="-1">
-      <div v-if="!isMobile" :id="getPanelId(activeTab)" role="tabpanel" :aria-labelledby="getTabId(activeTab)">
-        <component :is="getTabComponent(activeTab)" v-bind="getTabProps(activeTab)" @navigate="handleNavigate" />
-      </div>
-
-      <Accordion v-else :activeIndex="activeTab" class="mobile-main-accordion" @tab-open="onMobileAccordionOpen">
-        <AccordionTab v-for="(item, index) in tabItems" :key="item.label">
-          <template #header>
-            <div class="mobile-main-header">
-              <span>{{ item.label }}</span>
-              <span v-if="item.badge" class="top-nav-tab-badge">{{ item.badge }}</span>
-            </div>
-          </template>
-          <component :is="getTabComponent(index)" v-bind="getTabProps(index)" @navigate="handleNavigate" />
-        </AccordionTab>
-      </Accordion>
+      <template v-if="selectedJobForDetails">
+        <JobDetailsView :job="selectedJobForDetails" @back="selectedJobForDetails = null" />
+      </template>
+      <template v-else>
+        <div :id="getPanelId(activeTab)" role="tabpanel" :aria-labelledby="getTabId(activeTab)">
+          <component :is="getTabComponent(activeTab)" v-bind="getTabProps(activeTab)" @navigate="handleNavigate" @view-details="handleViewDetails" />
+        </div>
+      </template>
     </main>
 
     <div class="state-toggle-btn">
@@ -60,9 +74,8 @@
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
-import Accordion from 'primevue/accordion';
-import AccordionTab from 'primevue/accordiontab';
+import { nextTick, onBeforeUnmount, onMounted, ref, computed } from 'vue';
+import Menu from 'primevue/menu';
 import ProfileInfoView from './components/ProfileInfoView.vue';
 import JobAlertsView from './components/JobAlertsView.vue';
 import AccountSettingsView from './components/AccountSettingsView.vue';
@@ -73,6 +86,7 @@ import DashboardOverviewView from './components/DashboardOverviewView.vue';
 import ApplicationsSectionView from './components/ApplicationsSectionView.vue';
 import InterviewsSectionView from './components/InterviewsSectionView.vue';
 import SavedJobsSectionView from './components/SavedJobsSectionView.vue';
+import JobDetailsView from './components/JobDetailsView.vue';
 
 const tabItems = [
   { label: 'Dashboard', icon: '' },
@@ -196,6 +210,34 @@ const isEmptyState = ref(false);
 const activeTab = ref(0);
 const tabRefs = [];
 const isMobile = ref(false);
+const selectedJobForDetails = ref(null);
+
+const visibleTabs = computed(() => {
+  if (!isMobile.value) return tabItems;
+  return tabItems.slice(0, 2);
+});
+
+const moreMenuItems = computed(() => {
+  if (!isMobile.value) return [];
+  return tabItems.slice(2).map((item, index) => {
+    const originalIndex = index + 2;
+    return {
+      label: item.label,
+      command: () => handleNavigate(originalIndex),
+      badge: item.badge
+    };
+  });
+});
+
+const moreMenu = ref(null);
+
+const toggleMoreMenu = (event) => {
+  moreMenu.value.toggle(event);
+};
+
+const handleViewDetails = (job) => {
+  selectedJobForDetails.value = job;
+};
 
 const getTabId = (index) => `dashboard-tab-${index}`;
 const getPanelId = (index) => `dashboard-panel-${index}`;
@@ -218,10 +260,6 @@ const activateTab = (index, { moveFocus = false } = {}) => {
 
 const handleNavigate = (index) => {
   activateTab(index);
-};
-
-const onMobileAccordionOpen = (event) => {
-  activeTab.value = event.index;
 };
 
 const onTabKeydown = (event) => {
@@ -805,32 +843,6 @@ onBeforeUnmount(() => {
   .top-nav-tab-active {
     border-color: rgba(60, 109, 104, 0.34);
     box-shadow: none;
-  }
-
-  .mobile-main-accordion {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .mobile-main-accordion :deep(.p-accordion-tab) {
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    overflow: hidden;
-    background: #fff;
-  }
-
-  .mobile-main-accordion :deep(.p-accordion-header-link) {
-    min-height: 56px;
-    padding: 16px 18px;
-    border: none;
-    color: var(--text-strong);
-    background: #fff;
-  }
-
-  .mobile-main-accordion :deep(.p-accordion-content) {
-    border: none;
-    padding: 0 16px 16px;
   }
 
   .cards-grid-3,
