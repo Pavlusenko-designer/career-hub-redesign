@@ -1,18 +1,42 @@
+<script setup>
+import { useRouter } from 'vue-router';
+import Button from 'primevue/button';
+import AppIcon from './AppIcon.vue';
+import ApplicationCard from './ApplicationCard.vue';
+import InfoChip from './InfoChip.vue';
+import InterviewCard from './InterviewCard.vue';
+import JobCard from './JobCard.vue';
+import OnboardingWidget from './OnboardingWidget.vue';
+import { store } from '../store';
+
+const router = useRouter();
+
+const navigateTo = (routeName) => {
+  router.push({ name: routeName });
+};
+
+const viewJobDetails = (job) => {
+  // We can either set it in store or navigate to route. 
+  // Let's use the route for multi-page feel.
+  router.push({ name: 'JobDetails', params: { id: job.jobId } });
+};
+</script>
+
 <template>
   <div>
     <OnboardingWidget />
 
-    <template v-if="!isEmptyState">
+    <template v-if="!store.isEmptyState">
       <section class="dashboard-section">
         <div class="section-header">
           <div class="title-area">
             <h2>Upcoming Interviews</h2>
             <p class="subtitle">Prepare for your scheduled interviews</p>
           </div>
-          <a href="#" class="view-all-link" @click.prevent="$emit('navigate', 2)">View All <AppIcon name="arrow-right" /></a>
+          <a href="#" class="view-all-link" @click.prevent="navigateTo('Interviews')">View All <AppIcon name="arrow-right" /></a>
         </div>
         <div class="cards-list-vertical">
-          <InterviewCard v-for="interview in interviews.slice(0, 3)" :key="`${interview.title}-${interview.date}-${interview.time}`" v-bind="interview" @view-details="$emit('view-details', interview)" />
+          <InterviewCard v-for="interview in store.interviews.slice(0, 3)" :key="`${interview.title}-${interview.date}-${interview.time}`" v-bind="interview" @view-details="viewJobDetails(interview)" />
         </div>
       </section>
 
@@ -22,10 +46,10 @@
             <h2>Active Applications</h2>
             <p class="subtitle">Track your application progress</p>
           </div>
-          <a href="#" class="view-all-link" @click.prevent="$emit('navigate', 1)">View All <AppIcon name="arrow-right" /></a>
+          <a href="#" class="view-all-link" @click.prevent="navigateTo('Applications')">View All <AppIcon name="arrow-right" /></a>
         </div>
         <div class="cards-grid-3">
-          <ApplicationCard v-for="application in dashboardApplications" :key="application.title" v-bind="application" :show-highlight="false" />
+          <ApplicationCard v-for="application in store.dashboardApplications" :key="application.title" v-bind="application" :show-highlight="false" />
         </div>
       </section>
 
@@ -35,10 +59,10 @@
             <h2>Saved Jobs</h2>
             <p class="subtitle">Jobs you've bookmarked for later</p>
           </div>
-          <a href="#" class="view-all-link" @click.prevent="$emit('navigate', 3)">View All <AppIcon name="arrow-right" /></a>
+          <a href="#" class="view-all-link" @click.prevent="navigateTo('SavedJobs')">View All <AppIcon name="arrow-right" /></a>
         </div>
         <div class="cards-grid-3">
-          <JobCard v-for="job in savedJobs.slice(0, 3)" :key="job.jobId" v-bind="job" />
+          <JobCard v-for="job in store.savedJobs.slice(0, 3)" :key="job.jobId" v-bind="job" />
         </div>
       </section>
 
@@ -153,25 +177,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import Button from 'primevue/button';
-import AppIcon from './AppIcon.vue';
-import ApplicationCard from './ApplicationCard.vue';
-import InfoChip from './InfoChip.vue';
-import InterviewCard from './InterviewCard.vue';
-import JobCard from './JobCard.vue';
-import OnboardingWidget from './OnboardingWidget.vue';
-
-defineProps({
-  isEmptyState: Boolean,
-  savedJobs: Array,
-  interviews: Array,
-  dashboardApplications: Array
-});
-
-defineEmits(['navigate', 'view-details']);
-</script>
 
 <style scoped>
 .empty-state-stack {

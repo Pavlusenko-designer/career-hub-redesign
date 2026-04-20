@@ -1,3 +1,9 @@
+<script setup>
+import ApplicationCard from './ApplicationCard.vue';
+import SectionHero from './SectionHero.vue';
+import { store } from '../store';
+</script>
+
 <template>
   <div>
     <SectionHero
@@ -14,7 +20,7 @@
         </div>
       </div>
       <div class="cards-grid-2 compact-grid">
-        <ApplicationCard v-for="application in activeApplications" :key="application.title" v-bind="application" :show-highlight="false" />
+        <ApplicationCard v-for="application in store.activeApplications" :key="application.title" v-bind="application" :show-highlight="false" />
       </div>
     </section>
 
@@ -26,18 +32,8 @@
         </div>
       </div>
       <div class="cards-grid-2 compact-grid">
-        <ApplicationCard v-for="application in closedApplications" :key="application.title" v-bind="application" :show-highlight="false" />
+        <ApplicationCard v-for="application in store.closedApplications" :key="application.title" v-bind="application" :show-highlight="false" />
       </div>
     </section>
   </div>
 </template>
-
-<script setup>
-import ApplicationCard from './ApplicationCard.vue';
-import SectionHero from './SectionHero.vue';
-
-defineProps({
-  activeApplications: Array,
-  closedApplications: Array
-});
-</script>

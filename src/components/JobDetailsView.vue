@@ -1,7 +1,50 @@
+<script setup>
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+import Button from 'primevue/button';
+import AppIcon from './AppIcon.vue';
+import InfoChip from './InfoChip.vue';
+import InterviewCard from './InterviewCard.vue';
+import { store } from '../store';
+
+const props = defineProps({
+  id: {
+    type: String,
+    required: true
+  }
+});
+
+const router = useRouter();
+
+const job = computed(() => {
+  // Search in interviews first (since the original logic passed an interview object to view-details)
+  const interviewMatch = store.interviews.find(i => i.jobId === props.id || i.title === props.id);
+  if (interviewMatch) return interviewMatch;
+  
+  // Search in saved jobs
+  const jobMatch = store.savedJobs.find(j => j.jobId === props.id);
+  if (jobMatch) return jobMatch;
+  
+  // Search in applications
+  const appMatch = store.activeApplications.find(a => a.jobId === props.id);
+  if (appMatch) return appMatch;
+
+  return null;
+});
+
+const goBack = () => {
+  if (window.history.length > 1) {
+    router.back();
+  } else {
+    router.push({ name: 'Dashboard' });
+  }
+};
+</script>
+
 <template>
   <div class="job-details-view">
     <div class="job-details-header">
-      <Button class="back-btn p-button-text p-button-plain" @click="$emit('back')">
+      <Button class="back-btn p-button-text p-button-plain" @click="goBack">
         <template #icon>
           <AppIcon name="arrow-left" />
         </template>
@@ -57,22 +100,6 @@
     </section>
   </div>
 </template>
-
-<script setup>
-import Button from 'primevue/button';
-import AppIcon from './AppIcon.vue';
-import InfoChip from './InfoChip.vue';
-import InterviewCard from './InterviewCard.vue';
-
-defineProps({
-  job: {
-    type: Object,
-    default: null
-  }
-});
-
-defineEmits(['back']);
-</script>
 
 <style scoped>
 .job-details-view {

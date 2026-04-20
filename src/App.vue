@@ -48,22 +48,15 @@
     </div>
 
     <main id="main-content" class="main-content" tabindex="-1">
-      <template v-if="selectedJobForDetails">
-        <JobDetailsView :job="selectedJobForDetails" @back="selectedJobForDetails = null" />
-      </template>
-      <template v-else>
-        <div :id="getPanelId(activeTab)" role="tabpanel" :aria-labelledby="getTabId(activeTab)">
-          <component :is="getTabComponent(activeTab)" v-bind="getTabProps(activeTab)" @navigate="handleNavigate" @view-details="handleViewDetails" />
-        </div>
-      </template>
+      <router-view />
     </main>
 
     <div class="state-toggle-btn">
       <Button
         rounded
         severity="secondary"
-        :label="isEmptyState ? 'Show Populated State' : 'Show Empty State'"
-        @click="isEmptyState = !isEmptyState"
+        :label="store.isEmptyState ? 'Show Populated State' : 'Show Empty State'"
+        @click="store.isEmptyState = !store.isEmptyState"
       >
         <template #icon>
           <AppIcon name="sync" />
@@ -74,143 +67,33 @@
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref, computed } from 'vue';
+import { onBeforeUnmount, onMounted, ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import Menu from 'primevue/menu';
-import ProfileInfoView from './components/ProfileInfoView.vue';
-import JobAlertsView from './components/JobAlertsView.vue';
-import AccountSettingsView from './components/AccountSettingsView.vue';
-import ExternalLoginView from './components/ExternalLoginView.vue';
 import AppIcon from './components/AppIcon.vue';
 import Button from 'primevue/button';
-import DashboardOverviewView from './components/DashboardOverviewView.vue';
-import ApplicationsSectionView from './components/ApplicationsSectionView.vue';
-import InterviewsSectionView from './components/InterviewsSectionView.vue';
-import SavedJobsSectionView from './components/SavedJobsSectionView.vue';
-import JobDetailsView from './components/JobDetailsView.vue';
+import { store } from './store';
+
+const route = useRoute();
+const router = useRouter();
 
 const tabItems = [
-  { label: 'Dashboard', icon: '' },
-  { label: 'Applications', icon: '', badge: 3 },
-  { label: 'Interviews', icon: '', badge: 3 },
-  { label: 'Saved Jobs', icon: '', badge: 4 },
-  { label: 'Profile information', icon: '' },
-  { label: 'Job Alerts', icon: '', badge: 2 },
-  { label: 'Account settings', icon: '' },
-  { label: 'External Login', icon: '' }
+  { label: 'Dashboard', icon: '', routeName: 'Dashboard' },
+  { label: 'Applications', icon: '', badge: 3, routeName: 'Applications' },
+  { label: 'Interviews', icon: '', badge: 3, routeName: 'Interviews' },
+  { label: 'Saved Jobs', icon: '', badge: 4, routeName: 'SavedJobs' },
+  { label: 'Profile information', icon: '', routeName: 'Profile' },
+  { label: 'Job Alerts', icon: '', badge: 2, routeName: 'Alerts' },
+  { label: 'Account settings', icon: '', routeName: 'Settings' },
+  { label: 'External Login', icon: '', routeName: 'ExternalLogin' }
 ];
 
-const savedJobs = [
-  {
-    title: 'Senior Product Designer',
-    category: 'Design',
-    location: 'New York, NY Office',
-    workType: 'Hybrid',
-    jobId: 'R1495971',
-    description: 'Lead end-to-end product design work across core user journeys, from concept exploration through launch.'
-  },
-  {
-    title: 'Product Designer',
-    category: 'Design Systems',
-    location: 'Remote, US',
-    workType: 'Full-time',
-    jobId: 'R1496042',
-    description: 'Shape the future of the design system and partner closely with product teams to scale quality across the platform.'
-  },
-  {
-    title: 'Product Manager',
-    category: 'Product',
-    location: 'Toronto, Canada',
-    workType: 'On-site',
-    jobId: 'R1496118',
-    description: 'Drive product direction for a key platform area and work with design and engineering to deliver measurable impact.'
-  },
-  {
-    title: 'UX Researcher',
-    category: 'Research',
-    location: 'Remote, Canada',
-    workType: 'Full-time',
-    jobId: 'R1496176',
-    description: 'Plan and run mixed-method studies that uncover user needs and guide product decisions across the roadmap.'
-  }
-];
-
-const interviews = [
-  {
-    title: 'Product Manager',
-    status: 'not_started',
-    description: 'Intro conversation with recruiting to confirm your background, motivations, and role fit.',
-    date: 'To be scheduled',
-    time: '30 min',
-    format: 'Google Meet',
-    avatarLabel: 'R'
-  },
-  {
-    title: 'Senior Product Designer',
-    status: 'accepted',
-    description: 'Portfolio review with the hiring manager focused on systems thinking and execution quality.',
-    date: 'Apr 15, 2026',
-    time: '1:30 PM EET',
-    format: 'Remote video',
-    avatarLabel: 'A'
-  },
-  {
-    title: 'Product Systems Designer',
-    status: 'in_progress',
-    description: 'Panel interview with design and engineering partners to walk through collaboration examples.',
-    date: 'Apr 18, 2026',
-    time: '4:00 PM EET',
-    format: 'New York, NY Office',
-    avatarLabel: 'D'
-  }
-];
-
-const activeApplications = [
-  {
-    title: 'Senior Product Designer',
-    team: 'Experience Design',
-    department: 'Product Design',
-    appliedDate: 'Mar 16, 2026',
-    lastUpdated: 'Updated today',
-    status: 'in_review',
-    description: 'Lead product design across complex user journeys and turn research into polished, scalable experiences.',
-    nextStep: 'No action needed yet. We will share the next step as soon as review is complete.',
-    location: 'Remote, US',
-    jobId: 'R-10291'
-  },
-  {
-    title: 'Product Systems Designer',
-    team: 'Design Systems',
-    department: 'Product Design',
-    appliedDate: 'Mar 14, 2026',
-    lastUpdated: 'Updated 1 day ago',
-    status: 'submitted',
-    description: 'Shape the future of the design system and partner with product teams to raise quality across the platform.',
-    location: 'Remote, Europe',
-    jobId: 'R-21980'
-  }
-];
-
-const dashboardApplications = activeApplications.slice(0, 2);
-
-const closedApplications = [
-  {
-    title: 'Senior Product Designer',
-    team: 'Content Experience',
-    department: 'Product Design',
-    appliedDate: 'Feb 09, 2026',
-    lastUpdated: 'Closed 3 days ago',
-    status: 'rejected',
-    description: 'Drive content-focused product design work that improves clarity, usability, and trust across core journeys.',
-    location: 'Remote, US',
-    jobId: 'R-45002'
-  }
-];
-
-const isEmptyState = ref(false);
-const activeTab = ref(0);
 const tabRefs = [];
 const isMobile = ref(false);
-const selectedJobForDetails = ref(null);
+
+const activeTab = computed(() => {
+  return tabItems.findIndex(item => item.routeName === route.name);
+});
 
 const visibleTabs = computed(() => {
   if (!isMobile.value) return tabItems;
@@ -219,11 +102,10 @@ const visibleTabs = computed(() => {
 
 const moreMenuItems = computed(() => {
   if (!isMobile.value) return [];
-  return tabItems.slice(2).map((item, index) => {
-    const originalIndex = index + 2;
+  return tabItems.slice(2).map((item) => {
     return {
       label: item.label,
-      command: () => handleNavigate(originalIndex),
+      command: () => router.push({ name: item.routeName }),
       badge: item.badge
     };
   });
@@ -233,10 +115,6 @@ const moreMenu = ref(null);
 
 const toggleMoreMenu = (event) => {
   moreMenu.value.toggle(event);
-};
-
-const handleViewDetails = (job) => {
-  selectedJobForDetails.value = job;
 };
 
 const getTabId = (index) => `dashboard-tab-${index}`;
@@ -252,14 +130,13 @@ const focusTab = (index) => {
 };
 
 const activateTab = (index, { moveFocus = false } = {}) => {
-  activeTab.value = index;
-  if (moveFocus) {
-    nextTick(() => focusTab(index));
+  const item = tabItems[index];
+  if (item) {
+    router.push({ name: item.routeName });
+    if (moveFocus) {
+      setTimeout(() => focusTab(index), 0);
+    }
   }
-};
-
-const handleNavigate = (index) => {
-  activateTab(index);
 };
 
 const onTabKeydown = (event) => {
@@ -292,48 +169,19 @@ const onTabKeydown = (event) => {
   activateTab(nextIndex, { moveFocus: true });
 };
 
-const getTabComponent = (index) => {
-  switch (index) {
-    case 0: return DashboardOverviewView;
-    case 1: return ApplicationsSectionView;
-    case 2: return InterviewsSectionView;
-    case 3: return SavedJobsSectionView;
-    case 4: return ProfileInfoView;
-    case 5: return JobAlertsView;
-    case 6: return AccountSettingsView;
-    case 7: return ExternalLoginView;
-    default: return DashboardOverviewView;
-  }
-};
-
-const getTabProps = (index) => {
-  switch (index) {
-    case 0:
-      return { isEmptyState: isEmptyState.value, savedJobs, interviews, dashboardApplications };
-    case 1:
-      return { activeApplications, closedApplications };
-    case 2:
-      return { interviews };
-    case 3:
-      return { savedJobs };
-    default:
-      return {};
-  }
-};
-
-const mobileQuery = typeof window !== 'undefined' ? window.matchMedia('(max-width: 768px)') : null;
+const NAV_BREAKPOINT = 1080; // Threshold where full nav starts to feel crowded
 
 const syncViewport = () => {
-  isMobile.value = mobileQuery?.matches ?? false;
+  isMobile.value = window.innerWidth <= NAV_BREAKPOINT;
 };
 
 onMounted(() => {
   syncViewport();
-  mobileQuery?.addEventListener?.('change', syncViewport);
+  window.addEventListener('resize', syncViewport);
 });
 
 onBeforeUnmount(() => {
-  mobileQuery?.removeEventListener?.('change', syncViewport);
+  window.removeEventListener('resize', syncViewport);
 });
 </script>
 
@@ -808,7 +656,7 @@ onBeforeUnmount(() => {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1080px) {
   .main-content {
     padding: 20px 16px;
     gap: 32px;
@@ -1010,7 +858,7 @@ onBeforeUnmount(() => {
   .main-content .saved-jobs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1080px) {
   .main-content .dashboard-section + .dashboard-section { margin-top: 28px; }
   .main-content .section-hero + .dashboard-section { margin-top: 32px; }
   .main-content .onboarding-widget + .dashboard-section { margin-top: 36px; }
