@@ -14,7 +14,7 @@
         </div>
       </div>
       <div class="cards-list-vertical">
-        <InterviewCard v-for="interview in interviews" :key="`${interview.title}-${interview.date}-${interview.time}`" v-bind="interview" />
+        <InterviewCard v-for="interview in interviews" :key="`${interview.title}-${interview.date}-${interview.time}`" v-bind="interview" @view-details="$emit('view-details', interview)" />
       </div>
     </section>
   </div>
@@ -27,4 +27,6 @@ import SectionHero from './SectionHero.vue';
 defineProps({
   interviews: Array
 });
+
+defineEmits(['view-details']);
 </script>

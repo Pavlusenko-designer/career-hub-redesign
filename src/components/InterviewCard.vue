@@ -30,7 +30,7 @@
     </div>
 
     <div class="actions-container">
-      <Button label="View Details" class="p-button-secondary action-btn" outlined />
+      <Button label="View Details" class="p-button-secondary action-btn" outlined @click="$emit('view-details')" />
       <Button v-if="primaryActionText" :label="primaryActionText" class="p-button-primary action-btn view-details-btn">
         <template #icon>
           <AppIcon :name="primaryActionIcon" />
@@ -46,6 +46,8 @@ import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import Avatar from 'primevue/avatar';
 import AppIcon from './AppIcon.vue';
+
+defineEmits(['view-details']);
 
 const props = defineProps({
   title: {

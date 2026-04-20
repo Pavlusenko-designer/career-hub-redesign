@@ -12,7 +12,7 @@
           <a href="#" class="view-all-link" @click.prevent="$emit('navigate', 2)">View All <AppIcon name="arrow-right" /></a>
         </div>
         <div class="cards-list-vertical">
-          <InterviewCard v-for="interview in interviews.slice(0, 3)" :key="`${interview.title}-${interview.date}-${interview.time}`" v-bind="interview" />
+          <InterviewCard v-for="interview in interviews.slice(0, 3)" :key="`${interview.title}-${interview.date}-${interview.time}`" v-bind="interview" @view-details="$emit('view-details', interview)" />
         </div>
       </section>
 
@@ -170,7 +170,7 @@ defineProps({
   dashboardApplications: Array
 });
 
-defineEmits(['navigate']);
+defineEmits(['navigate', 'view-details']);
 </script>
 
 <style scoped>
