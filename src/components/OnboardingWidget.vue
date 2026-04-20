@@ -2,7 +2,7 @@
   <div class="onboarding-widget">
     <div class="text-content">
       <span class="eyebrow ds-eyebrow">Dashboard</span>
-      <h2 class="title ds-title-hero">Welcome to Career Hub.</h2>
+      <h2 class="title ds-title-hero">Hello there!</h2>
       <p class="subtitle ds-body">Explore your saved roles, active applications, and upcoming interviews all in one place.</p>
     </div>
   </div>
