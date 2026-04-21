@@ -4,7 +4,7 @@
     modal
     :closable="false"
     :draggable="false"
-    :style="{ width: 'min(100%, 34rem)' }"
+    :style="{ width: 'min(calc(100% - 32px), 34rem)' }"
     class="login-otp-dialog"
     @update:visible="emit('update:visible', $event)"
   >
@@ -109,7 +109,7 @@
             />
           </template>
 
-          <template v-else>
+          <template v-else-if="currentStep === 'verify'">
             <div class="login-step-header">
               <p class="login-modal-intro">
                 {{
@@ -161,6 +161,71 @@
             <small v-if="successMessage" class="login-success-text" role="status">{{ successMessage }}</small>
 
             <Button label="Verify and continue" severity="primary" class="login-send-btn" @click="submitVerifyStep" />
+          </template>
+
+          <template v-else-if="currentStep === 'email-association'">
+            <div class="login-step-header">
+              <h2 class="login-association-title">Associate an email address</h2>
+              <p class="login-modal-intro">
+                To complete your profile, please provide an email address where you'd like to receive job updates and notifications.
+              </p>
+            </div>
+
+            <div class="login-input-group">
+              <label for="associated-email" class="login-field-label">Email address</label>
+              <InputText
+                id="associated-email"
+                v-model="associatedEmail"
+                type="email"
+                placeholder="email@example.com"
+                class="login-input"
+                :class="{ 'login-input-error': emailAssociationErrors.email }"
+                :aria-invalid="emailAssociationErrors.email ? 'true' : 'false'"
+                :aria-describedby="emailAssociationErrors.email ? 'associated-email-error' : undefined"
+              />
+              <small v-if="emailAssociationErrors.email" id="associated-email-error" class="login-error-text" role="alert">
+                {{ emailAssociationErrors.email }}
+              </small>
+            </div>
+
+            <Button label="Complete profile" severity="primary" class="login-send-btn" @click="submitEmailAssociation" />
+          </template>
+
+          <template v-else-if="currentStep === 'email-selection'">
+            <div class="login-step-header">
+              <h2 class="login-association-title">Multiple profiles found</h2>
+              <p class="login-modal-intro">
+                We've found more than one email address associated with your mobile number. Which one would you like to use to sign in?
+              </p>
+            </div>
+
+            <div class="login-email-list">
+              <button
+                v-for="option in selectableEmails"
+                :key="option"
+                type="button"
+                class="login-email-option"
+                @click="selectEmail(option)"
+              >
+                <div class="login-email-option-content">
+                  <span class="login-email-option-text">{{ option }}</span>
+                  <AppIcon name="arrow-right" class="login-email-option-icon" />
+                </div>
+              </button>
+            </div>
+          </template>
+
+          <template v-else-if="currentStep === 'success'">
+            <div class="login-success-screen">
+              <div class="login-success-icon-wrapper">
+                <AppIcon name="check" />
+              </div>
+              <h2 class="login-association-title">Success!</h2>
+              <p class="login-modal-intro" style="text-align: center;">
+                {{ successMessage }}
+              </p>
+              <Button label="Great, thanks!" severity="primary" class="login-send-btn" @click="closeDialog" />
+            </div>
           </template>
 
           <div class="login-social-section">
@@ -226,6 +291,12 @@ const verifyErrors = ref({
   otpCode: '',
   general: ''
 });
+const associatedEmail = ref('');
+const emailAssociationErrors = ref({
+  email: ''
+});
+const selectableEmails = ref([]);
+const selectedEmailFromList = ref('');
 
 let countdownInterval = null;
 
@@ -257,6 +328,12 @@ const resetState = () => {
   selectedMethod.value = 'email';
   email.value = '';
   phone.value = '';
+  associatedEmail.value = '';
+  emailAssociationErrors.value = {
+    email: ''
+  };
+  selectableEmails.value = [];
+  selectedEmailFromList.value = '';
   marketingConsent.value = false;
   retentionConsent.value = false;
   otpDigits.value = ['', '', '', '', '', ''];
@@ -380,8 +457,45 @@ const submitVerifyStep = () => {
     return;
   }
 
+  // Handle special case: new profile association for SMS users
+  if (selectedMethod.value === 'sms' && otpCode.value.trim() === '123456') {
+    const rawDigits = phone.value.replace(/\D/g, '');
+    
+    // Multiple emails conflict case
+    if (rawDigits === '15551234567') {
+      selectableEmails.value = ['alex.m@example.com', 'a.morgan@work.com'];
+      currentStep.value = 'email-selection';
+      return;
+    }
+    
+    currentStep.value = 'email-association';
+    return;
+  }
+
   successMessage.value = 'Verification successful. You are now signed in.';
   clearCountdown();
+  currentStep.value = 'success';
+};
+
+const selectEmail = (chosenEmail) => {
+  selectedEmailFromList.value = chosenEmail;
+  successMessage.value = `Verification successful. You've signed in using ${chosenEmail}.`;
+  clearCountdown();
+  currentStep.value = 'success';
+};
+
+const submitEmailAssociation = () => {
+  emailAssociationErrors.value.email = '';
+
+  const isValidEmail = /\S+@\S+\.\S+/.test(associatedEmail.value.trim());
+  if (!isValidEmail) {
+    emailAssociationErrors.value.email = 'Enter a valid email address.';
+    return;
+  }
+
+  successMessage.value = 'Verification successful. Your account is now associated and you are signed in.';
+  clearCountdown();
+  currentStep.value = 'success';
 };
 
 const resendCode = () => {
@@ -520,6 +634,14 @@ onBeforeUnmount(() => {
   font-size: 13px;
   line-height: 1.5;
   color: var(--text-subtle);
+}
+
+.login-association-title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: #0d244c;
 }
 
 .login-input-group {
@@ -751,7 +873,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 768px) {
   .login-modal-header {
-    padding: 24px 20px 8px;
+    padding: 24px 24px 8px;
   }
 
   .login-modal-header h2 {
@@ -759,20 +881,23 @@ onBeforeUnmount(() => {
   }
 
   .login-modal-content {
-    padding: 8px 20px 24px;
+    padding: 8px 24px 32px;
+    gap: 20px;
   }
 
   .login-modal-intro {
     font-size: 16px;
+    line-height: 1.5;
   }
 
   .login-resend-row {
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
   }
 
   .login-otp-row {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .login-divider-row {
@@ -783,8 +908,121 @@ onBeforeUnmount(() => {
     font-size: 14px;
   }
 
+  .login-social-list {
+    gap: 16px;
+  }
+
   .login-legal-links {
     gap: 20px;
+  }
+}
+
+.login-success-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 0 8px;
+}
+
+.login-success-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border-radius: 50%;
+  font-size: 40px;
+}
+
+.login-success-screen .login-association-title {
+  text-align: center;
+}
+
+.login-email-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-email-option {
+  width: 100%;
+  padding: 16px 20px;
+  background-color: var(--bg-default);
+  border: 1px solid #bdbdbd;
+  border-radius: 12px;
+  color: #0d244c;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.login-email-option:hover {
+  border-color: var(--primary-bg);
+  background-color: #f0fdf9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(60, 109, 104, 0.08);
+}
+
+.login-email-option-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.login-email-option-icon {
+  font-size: 14px;
+  color: var(--text-subtle);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.login-email-option:hover .login-email-option-icon {
+  color: var(--primary-bg);
+  transform: translateX(4px);
+}
+
+@media (max-width: 480px) {
+  .login-modal-header {
+    padding: 20px 20px 8px;
+  }
+
+  .login-modal-content {
+    padding: 8px 20px 24px;
+    gap: 18px;
+  }
+
+  .login-modal-intro {
+    font-size: 15px;
+  }
+
+  .login-otp-row {
+    gap: 6px;
+  }
+
+  .login-otp-input :deep(.p-inputtext),
+  .login-otp-input.p-inputtext {
+    min-height: 44px;
+    font-size: 18px;
+  }
+
+  .login-legal-links {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .login-legal-divider {
+    display: none;
+  }
+
+  .login-social-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
   }
 }
 </style>
