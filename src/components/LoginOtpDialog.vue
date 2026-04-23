@@ -63,9 +63,19 @@
               <small v-if="formErrors.contact" id="otp-contact-error" class="login-error-text" role="alert">{{ formErrors.contact }}</small>
             </div>
 
-            <button type="button" class="login-method-link" @click="toggleMethod">
-              {{ selectedMethod === 'email' ? 'Use SMS login instead' : 'Use email login instead' }}
-            </button>
+            <Button
+              type="button"
+              :label="selectedMethod === 'email' ? 'Use SMS login instead' : 'Use email login instead'"
+              :icon="selectedMethod === 'email' ? 'phone' : 'mail'"
+              severity="secondary"
+              outlined
+              class="login-method-btn"
+              @click="toggleMethod"
+            >
+              <template #icon>
+                <AppIcon :name="selectedMethod === 'email' ? 'phone' : 'mail'" />
+              </template>
+            </Button>
 
             <div class="login-consent-list">
               <div class="login-consent-item" :class="{ 'login-consent-item-error': formErrors.marketingConsent }">
@@ -148,9 +158,18 @@
             </div>
 
             <div class="login-resend-row">
-              <button type="button" class="login-method-link" @click="goBackToRequestStep">
-                {{ selectedMethod === 'email' ? 'Use SMS login instead' : 'Use email login instead' }}
-              </button>
+              <Button
+                type="button"
+                :label="selectedMethod === 'email' ? 'Use SMS login instead' : 'Use email login instead'"
+                severity="secondary"
+                outlined
+                class="login-method-btn"
+                @click="goBackToRequestStep"
+              >
+                <template #icon>
+                  <AppIcon :name="selectedMethod === 'email' ? 'phone' : 'mail'" />
+                </template>
+              </Button>
 
               <button type="button" class="login-resend-btn" :disabled="resendTimer > 0" @click="resendCode">
                 {{ resendTimer > 0 ? `Resend code in ${formattedTimer}` : 'Resend code' }}
@@ -205,14 +224,42 @@
                 :key="option"
                 type="button"
                 class="login-email-option"
-                @click="selectEmail(option)"
+                @click="selectEmailForCompletion(option)"
               >
                 <div class="login-email-option-content">
-                  <span class="login-email-option-text">{{ option }}</span>
+                  <span class="login-email-option-text">{{ obscureEmail(option) }}</span>
                   <AppIcon name="arrow-right" class="login-email-option-icon" />
                 </div>
               </button>
             </div>
+          </template>
+
+          <template v-else-if="currentStep === 'email-completion'">
+            <div class="login-step-header">
+              <h2 class="login-association-title">Verify your email</h2>
+              <p class="login-modal-intro">
+                To continue, please enter the full email address for: <strong>{{ obscureEmail(selectedEmailToComplete) }}</strong>
+              </p>
+            </div>
+
+            <div class="login-input-group">
+              <label for="completion-email" class="login-field-label">Full email address</label>
+              <InputText
+                id="completion-email"
+                v-model="completionEmail"
+                type="email"
+                placeholder="email@example.com"
+                class="login-input"
+                :class="{ 'login-input-error': emailCompletionErrors.email }"
+                :aria-invalid="emailCompletionErrors.email ? 'true' : 'false'"
+                :aria-describedby="emailCompletionErrors.email ? 'completion-email-error' : undefined"
+              />
+              <small v-if="emailCompletionErrors.email" id="completion-email-error" class="login-error-text" role="alert">
+                {{ emailCompletionErrors.email }}
+              </small>
+            </div>
+
+            <Button label="Verify and continue" severity="primary" class="login-send-btn" @click="submitEmailCompletion" />
           </template>
 
           <template v-else-if="currentStep === 'success'">
@@ -297,6 +344,11 @@ const emailAssociationErrors = ref({
 });
 const selectableEmails = ref([]);
 const selectedEmailFromList = ref('');
+const selectedEmailToComplete = ref('');
+const completionEmail = ref('');
+const emailCompletionErrors = ref({
+  email: ''
+});
 
 let countdownInterval = null;
 
@@ -334,6 +386,11 @@ const resetState = () => {
   };
   selectableEmails.value = [];
   selectedEmailFromList.value = '';
+  selectedEmailToComplete.value = '';
+  completionEmail.value = '';
+  emailCompletionErrors.value = {
+    email: ''
+  };
   marketingConsent.value = false;
   retentionConsent.value = false;
   otpDigits.value = ['', '', '', '', '', ''];
@@ -477,9 +534,35 @@ const submitVerifyStep = () => {
   currentStep.value = 'success';
 };
 
-const selectEmail = (chosenEmail) => {
-  selectedEmailFromList.value = chosenEmail;
-  successMessage.value = `Verification successful. You've signed in using ${chosenEmail}.`;
+const obscureEmail = (email) => {
+  if (!email) return '';
+  const [localPart, domain] = email.split('@');
+  if (!domain) return email;
+
+  const obscuredLocal = localPart.slice(0, 3) + '_____';
+  const domainParts = domain.split('.');
+  const domainName = domainParts[0];
+  const obscuredDomainName = domainName.slice(0, 2) + '__';
+  
+  return `${obscuredLocal}@${obscuredDomainName}.`;
+};
+
+const selectEmailForCompletion = (chosenEmail) => {
+  selectedEmailToComplete.value = chosenEmail;
+  completionEmail.value = '';
+  emailCompletionErrors.value.email = '';
+  currentStep.value = 'email-completion';
+};
+
+const submitEmailCompletion = () => {
+  emailCompletionErrors.value.email = '';
+
+  if (completionEmail.value.trim().toLowerCase() !== selectedEmailToComplete.value.toLowerCase()) {
+    emailCompletionErrors.value.email = 'The email address you entered does not match.';
+    return;
+  }
+
+  successMessage.value = `Verification successful. You've signed in using ${selectedEmailToComplete.value}.`;
   clearCountdown();
   currentStep.value = 'success';
 };
@@ -508,13 +591,19 @@ const resendCode = () => {
 };
 
 const setOtpInputRef = (element, index) => {
-  const input = element?.$el?.querySelector?.('input') ?? element?.input ?? element;
-  otpInputRefs.value[index] = input || null;
+  // PrimeVue InputText renders as a plain <input>, so element.$el IS the DOM
+  // input element. Do NOT call querySelector('input') on it — that returns null
+  // because an <input> has no children — which caused focus() to silently fail.
+  const input = element?.$el ?? element?.input ?? element;
+  otpInputRefs.value[index] = (input instanceof HTMLElement) ? input : null;
 };
 
 const focusOtpInput = (index) => {
-  otpInputRefs.value[index]?.focus?.();
-  otpInputRefs.value[index]?.select?.();
+  const el = otpInputRefs.value[index];
+  if (el instanceof HTMLElement) {
+    el.focus();
+    el.select();
+  }
 };
 
 const handleOtpInput = (index, event) => {
@@ -525,13 +614,27 @@ const handleOtpInput = (index, event) => {
   verifyErrors.value.general = '';
 
   if (sanitized && index < otpDigits.value.length - 1) {
-    focusOtpInput(index + 1);
+    nextTick(() => focusOtpInput(index + 1));
   }
 };
 
 const handleOtpKeydown = (index, event) => {
-  if (event.key === 'Backspace' && !otpDigits.value[index] && index > 0) {
-    focusOtpInput(index - 1);
+  // When a digit key is pressed on an already-filled box, clear it first so the
+  // browser registers the new character and the @input handler fires (which
+  // drives the auto-advance). Without this, maxlength="1" silently swallows the
+  // keypress and focus never moves forward.
+  if (/^\d$/.test(event.key) && otpDigits.value[index]) {
+    otpDigits.value[index] = '';
+  }
+
+  if (event.key === 'Backspace') {
+    if (otpDigits.value[index]) {
+      // Clear the current box
+      otpDigits.value[index] = '';
+    } else if (index > 0) {
+      // Box is empty — move back and clear the previous box
+      focusOtpInput(index - 1);
+    }
   }
   if (event.key === 'ArrowLeft' && index > 0) {
     event.preventDefault();
@@ -701,7 +804,14 @@ onBeforeUnmount(() => {
   border-color: #ef4444;
 }
 
-.login-method-link,
+.login-method-btn {
+  width: 100%;
+  justify-content: center;
+  border-radius: 12px;
+  font-weight: 600;
+  gap: 10px;
+}
+
 .login-resend-btn {
   align-self: flex-start;
   padding: 0;
@@ -779,8 +889,7 @@ onBeforeUnmount(() => {
 
 .login-resend-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   gap: 16px;
 }
 

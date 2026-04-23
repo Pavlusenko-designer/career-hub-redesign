@@ -146,6 +146,17 @@ const viewJobDetails = (job) => {
     </template>
 
     <div v-else class="empty-state-stack">
+      <div class="empty-state-widget">
+        <div class="widget-card widget-cv">
+          <span class="widget-label">Recommended</span>
+          <h2 class="widget-title">Get matched!</h2>
+          <p class="widget-text">Upload your resume and see jobs that match your skills and experience.</p>
+          <div class="mt-auto">
+            <Button label="Search with CV" severity="primary" style="width: 100%" />
+          </div>
+        </div>
+      </div>
+
       <div class="empty-state-container">
         <div class="empty-state-content">
           <div class="icon-wrapper">
@@ -160,17 +171,6 @@ const viewJobDetails = (job) => {
                 <AppIcon name="search" />
               </template>
             </Button>
-          </div>
-        </div>
-      </div>
-
-      <div class="empty-state-widget">
-        <div class="widget-card widget-cv">
-          <span class="widget-label">Recommended</span>
-          <h2 class="widget-title">Get matched!</h2>
-          <p class="widget-text">Upload your resume and see jobs that match your skills and experience.</p>
-          <div class="mt-auto">
-            <Button label="Search with CV" severity="primary" style="width: 100%" />
           </div>
         </div>
       </div>
