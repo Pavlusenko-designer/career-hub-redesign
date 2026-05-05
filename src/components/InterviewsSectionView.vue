@@ -1,3 +1,16 @@
+<script setup>
+import { useRouter } from 'vue-router';
+import InterviewCard from './InterviewCard.vue';
+import SectionHero from './SectionHero.vue';
+import { store } from '../store';
+
+const router = useRouter();
+
+const viewJobDetails = (job) => {
+  router.push({ name: 'JobDetails', params: { id: job.jobId || 'PM-1' } }); // Fallback ID if missing
+};
+</script>
+
 <template>
   <div>
     <SectionHero
@@ -14,19 +27,8 @@
         </div>
       </div>
       <div class="cards-list-vertical">
-        <InterviewCard v-for="interview in interviews" :key="`${interview.title}-${interview.date}-${interview.time}`" v-bind="interview" @view-details="$emit('view-details', interview)" />
+        <InterviewCard v-for="interview in store.interviews" :key="`${interview.title}-${interview.date}-${interview.time}`" v-bind="interview" @view-details="viewJobDetails(interview)" />
       </div>
     </section>
   </div>
 </template>
-
-<script setup>
-import InterviewCard from './InterviewCard.vue';
-import SectionHero from './SectionHero.vue';
-
-defineProps({
-  interviews: Array
-});
-
-defineEmits(['view-details']);
-</script>

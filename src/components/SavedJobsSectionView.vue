@@ -1,3 +1,9 @@
+<script setup>
+import JobCard from './JobCard.vue';
+import SectionHero from './SectionHero.vue';
+import { store } from '../store';
+</script>
+
 <template>
   <div>
     <SectionHero
@@ -14,17 +20,8 @@
         </div>
       </div>
       <div class="saved-jobs-grid">
-        <JobCard v-for="job in savedJobs" :key="job.jobId" v-bind="job" />
+        <JobCard v-for="job in store.savedJobs" :key="job.jobId" v-bind="job" />
       </div>
     </section>
   </div>
 </template>
-
-<script setup>
-import JobCard from './JobCard.vue';
-import SectionHero from './SectionHero.vue';
-
-defineProps({
-  savedJobs: Array
-});
-</script>
