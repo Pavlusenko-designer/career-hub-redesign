@@ -38,6 +38,18 @@
         </template>
       </Button>
     </div>
+
+    <ApplicationJourneyDialog
+      v-model:visible="isJourneyDialogVisible"
+      :title="title"
+      :department="department"
+      :location="location"
+      :job-id="jobId"
+      :applied-date="appliedDate"
+      :last-updated="lastUpdated"
+      :status="status"
+      :next-step="nextStepText"
+    />
   </div>
 </template>
 
@@ -48,6 +60,7 @@ import Tag from 'primevue/tag';
 import Menu from 'primevue/menu';
 import InfoChip from './InfoChip.vue';
 import AppIcon from './AppIcon.vue';
+import ApplicationJourneyDialog from './ApplicationJourneyDialog.vue';
 
 const props = defineProps({
   title: {
@@ -135,6 +148,7 @@ const STATUS_CONFIG = {
 };
 
 const menu = ref(null);
+const isJourneyDialogVisible = ref(false);
 
 const statusConfig = computed(() => STATUS_CONFIG[props.status] || STATUS_CONFIG.in_review);
 const statusClass = computed(() => `status-${props.status}`);
@@ -142,6 +156,13 @@ const nextStepText = computed(() => props.nextStep || statusConfig.value.default
 const metaLabel = computed(() => props.lastUpdated);
 
 const menuItems = computed(() => [
+  {
+    label: 'Journey tracker',
+    icon: 'pi pi-map',
+    command: () => {
+      isJourneyDialogVisible.value = true;
+    }
+  },
   {
     label: 'Edit application',
     icon: 'pi pi-pencil'
