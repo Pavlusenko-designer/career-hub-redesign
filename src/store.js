@@ -110,8 +110,63 @@ export const store = reactive({
     }
   ],
 
+  signDocumentJobs: [
+    {
+      jobTitle: 'Senior Product Designer',
+      category: 'Product Design',
+      jobId: 'R-10291',
+      location: 'Remote, US',
+      description: 'Lead product design across complex user journeys and turn research into polished, scalable experiences.',
+      documents: [
+        {
+          id: 'offer-letter-r10291',
+          title: 'Offer Letter',
+          subtitle: 'Review your offer details, compensation, start date, and acceptance terms.',
+          status: 'pending',
+          signUrl: 'https://example.com/sign/offer-letter-r10291',
+          signedDocumentUrl: ''
+        },
+        {
+          id: 'confidentiality-agreement-r10291',
+          title: 'Confidentiality Agreement',
+          subtitle: 'Standard agreement for protecting company and candidate information during onboarding.',
+          status: 'signed',
+          signUrl: 'https://example.com/sign/confidentiality-agreement-r10291',
+          signedDocumentUrl: 'https://example.com/documents/confidentiality-agreement-r10291'
+        }
+      ]
+    },
+    {
+      jobTitle: 'Product Systems Designer',
+      category: 'Design Systems',
+      jobId: 'R-21980',
+      location: 'Remote, Europe',
+      description: 'Shape the future of the design system and partner with product teams to raise quality across the platform.',
+      documents: [
+        {
+          id: 'right-to-work-r21980',
+          title: 'Right to Work Confirmation',
+          subtitle: 'Confirm eligibility details before the recruiting team can finalize next steps.',
+          status: 'pending',
+          signUrl: 'https://example.com/sign/right-to-work-r21980',
+          signedDocumentUrl: ''
+        }
+      ]
+    }
+  ],
+
   // Helpers
   get dashboardApplications() {
     return this.activeApplications.slice(0, 2);
+  },
+
+  get visibleSignDocumentJobs() {
+    return this.isEmptyState
+      ? []
+      : this.signDocumentJobs.filter((job) => job.documents.some((document) => ['pending', 'signed'].includes(document.status)));
+  },
+
+  get signDocumentCount() {
+    return this.visibleSignDocumentJobs.reduce((total, job) => total + job.documents.length, 0);
   }
 });

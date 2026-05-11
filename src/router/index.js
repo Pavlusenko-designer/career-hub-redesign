@@ -8,6 +8,7 @@ import JobAlertsView from '../components/JobAlertsView.vue';
 import AccountSettingsView from '../components/AccountSettingsView.vue';
 import ExternalLoginView from '../components/ExternalLoginView.vue';
 import JobDetailsView from '../components/JobDetailsView.vue';
+import SignDocumentsView from '../components/SignDocumentsView.vue';
 
 const routes = [
   {
@@ -33,6 +34,11 @@ const routes = [
     path: '/saved-jobs',
     name: 'SavedJobs',
     component: SavedJobsSectionView
+  },
+  {
+    path: '/sign-documents',
+    name: 'SignDocuments',
+    component: SignDocumentsView
   },
   {
     path: '/profile',

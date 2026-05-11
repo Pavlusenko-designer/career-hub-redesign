@@ -77,10 +77,11 @@ import { store } from './store';
 const route = useRoute();
 const router = useRouter();
 
-const tabItems = [
+const baseTabItems = [
   { label: 'Dashboard', icon: '', routeName: 'Dashboard' },
   { label: 'Applications', icon: '', badge: 3, routeName: 'Applications' },
   { label: 'Interviews', icon: '', badge: 3, routeName: 'Interviews' },
+  { label: 'Sign Documents', icon: '', routeName: 'SignDocuments', requiresSignDocuments: true },
   { label: 'Saved Jobs', icon: '', badge: 4, routeName: 'SavedJobs' },
   { label: 'Profile information', icon: '', routeName: 'Profile' },
   { label: 'Job Alerts', icon: '', badge: 2, routeName: 'Alerts' },
@@ -91,18 +92,30 @@ const tabItems = [
 const tabRefs = [];
 const isMobile = ref(false);
 
+const tabItems = computed(() => {
+  return baseTabItems
+    .filter((item) => !item.requiresSignDocuments || store.signDocumentCount > 0)
+    .map((item) => {
+      if (item.routeName !== 'SignDocuments') return item;
+      return {
+        ...item,
+        badge: store.signDocumentCount
+      };
+    });
+});
+
 const activeTab = computed(() => {
-  return tabItems.findIndex(item => item.routeName === route.name);
+  return tabItems.value.findIndex(item => item.routeName === route.name);
 });
 
 const visibleTabs = computed(() => {
-  if (!isMobile.value) return tabItems;
-  return tabItems.slice(0, 2);
+  if (!isMobile.value) return tabItems.value;
+  return tabItems.value.slice(0, 2);
 });
 
 const moreMenuItems = computed(() => {
   if (!isMobile.value) return [];
-  return tabItems.slice(2).map((item) => {
+  return tabItems.value.slice(2).map((item) => {
     return {
       label: item.label,
       command: () => router.push({ name: item.routeName }),
@@ -130,7 +143,7 @@ const focusTab = (index) => {
 };
 
 const activateTab = (index, { moveFocus = false } = {}) => {
-  const item = tabItems[index];
+  const item = tabItems.value[index];
   if (item) {
     router.push({ name: item.routeName });
     if (moveFocus) {
@@ -140,7 +153,7 @@ const activateTab = (index, { moveFocus = false } = {}) => {
 };
 
 const onTabKeydown = (event) => {
-  const lastIndex = tabItems.length - 1;
+  const lastIndex = tabItems.value.length - 1;
   let nextIndex = activeTab.value;
 
   switch (event.key) {

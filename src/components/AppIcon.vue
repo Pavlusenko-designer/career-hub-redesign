@@ -98,6 +98,17 @@
     <g v-else-if="name === 'phone'">
       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
     </g>
+    <g v-else-if="name === 'file-text'">
+      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" />
+      <path d="M14 3v5h5" />
+      <path d="M9 13h6" />
+      <path d="M9 17h4" />
+    </g>
+    <g v-else-if="name === 'external-link'">
+      <path d="M14 4h6v6" />
+      <path d="m10 14 10-10" />
+      <path d="M20 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h4" />
+    </g>
   </svg>
 </template>
 
@@ -131,7 +142,9 @@ const strokeIcons = new Set([
   'pencil',
   'chevron-down',
   'mail',
-  'phone'
+  'phone',
+  'file-text',
+  'external-link'
 ]);
 
 const mode = computed(() => (strokeIcons.has(props.name) ? 'stroke' : 'fill'));
