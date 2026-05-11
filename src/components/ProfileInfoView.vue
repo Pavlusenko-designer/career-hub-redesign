@@ -8,6 +8,7 @@ import ProfileResumeSection from './ProfileResumeSection.vue';
 import ProfilePreferencesSection from './ProfilePreferencesSection.vue';
 import ProfileAvailabilitySection from './ProfileAvailabilitySection.vue';
 import ProfilePilotCredentialsSection from './ProfilePilotCredentialsSection.vue';
+import ProfileConsentManagementSection from './ProfileConsentManagementSection.vue';
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
@@ -106,6 +107,59 @@ const pilotCredentialsInitial = [
   createPilotCredentialRow(3, 'A310')
 ];
 
+const consentInitial = [
+  {
+    id: 'dataRetention',
+    group: 'profile',
+    title: 'Data Retention Consent',
+    description: 'Allow us to store your candidate profile, application history, and related career site information for future opportunities.',
+    agreed: true,
+    expiresSoon: true,
+    expiryDate: 'May 30, 2026',
+    expiryCountdown: '19 days remaining'
+  },
+  {
+    id: 'emailOptIn',
+    group: 'communication',
+    title: 'Email Opt-In',
+    description: 'Receive job alerts, recruiting updates, event invitations, and career site messages by email.',
+    agreed: true,
+    expiresSoon: false,
+    expiryDate: '',
+    expiryCountdown: ''
+  },
+  {
+    id: 'smsOptIn',
+    group: 'communication',
+    title: 'SMS Opt-In',
+    description: 'Receive text messages about applications, interviews, reminders, and time-sensitive recruiting updates.',
+    agreed: false,
+    expiresSoon: false,
+    expiryDate: '',
+    expiryCountdown: ''
+  },
+  {
+    id: 'aiFitScore',
+    group: 'ai',
+    title: 'AI Consent for Fit Score',
+    description: 'Allow AI-assisted matching to compare your profile with job requirements and show fit score guidance.',
+    agreed: true,
+    expiresSoon: false,
+    expiryDate: '',
+    expiryCountdown: ''
+  },
+  {
+    id: 'aiDiscovery',
+    group: 'ai',
+    title: 'AI Consent for AI Discovery',
+    description: 'Allow recruiters to discover your profile through AI-assisted search and recommendation experiences.',
+    agreed: false,
+    expiresSoon: false,
+    expiryDate: '',
+    expiryCountdown: ''
+  }
+];
+
 const contactSaved = ref(clone(contactInitial));
 const contactDraft = ref(clone(contactInitial));
 const resumeSaved = ref(clone(resumeInitial));
@@ -116,6 +170,13 @@ const availabilitySaved = ref(clone(availabilityInitial));
 const availabilityDraft = ref(clone(availabilityInitial));
 const pilotCredentialsSaved = ref(clone(pilotCredentialsInitial));
 const pilotCredentialsDraft = ref(clone(pilotCredentialsInitial));
+const consentCrmSnapshot = ref(clone(consentInitial));
+const consentDraft = ref(clone(consentInitial));
+const isConsentLoading = ref(false);
+const hasConsentLoadError = ref(false);
+const isConsentSaving = ref(false);
+const consentFeedbackMessage = ref('');
+const consentFeedbackType = ref('success');
 
 const profileTabIndex = ref(0);
 const isProfileMobile = ref(false);
@@ -126,7 +187,8 @@ const profileTabItems = [
   { label: 'Resume' },
   { label: 'Preferences' },
   { label: 'Availability' },
-  { label: 'Pilot Credentials' }
+  { label: 'Pilot Credentials' },
+  { label: 'Consent Management' }
 ];
 
 const visibleProfileTabs = computed(() => {
@@ -241,6 +303,59 @@ const removePilotCredentialRow = (index) => {
 };
 const savePilotCredentials = () => { pilotCredentialsSaved.value = clone(pilotCredentialsDraft.value); };
 const resetPilotCredentials = () => { pilotCredentialsDraft.value = clone(pilotCredentialsSaved.value); };
+const hasConsentChanges = computed(() => JSON.stringify(consentDraft.value) !== JSON.stringify(consentCrmSnapshot.value));
+
+const loadConsentFromCrm = ({ force = false } = {}) => {
+  if (isConsentLoading.value || (!force && hasConsentChanges.value)) return;
+  isConsentLoading.value = true;
+  hasConsentLoadError.value = false;
+  consentFeedbackMessage.value = '';
+
+  window.setTimeout(() => {
+    try {
+      consentDraft.value = clone(consentCrmSnapshot.value);
+    } catch (error) {
+      hasConsentLoadError.value = true;
+    } finally {
+      isConsentLoading.value = false;
+    }
+  }, 350);
+};
+
+const retryConsentLoad = () => {
+  loadConsentFromCrm({ force: true });
+};
+
+const discardConsentChanges = () => {
+  consentDraft.value = clone(consentCrmSnapshot.value);
+  consentFeedbackMessage.value = '';
+};
+
+const saveConsentChanges = () => {
+  if (!hasConsentChanges.value || isConsentSaving.value) return;
+
+  isConsentSaving.value = true;
+  consentFeedbackMessage.value = '';
+
+  window.setTimeout(() => {
+    try {
+      consentCrmSnapshot.value = clone(consentDraft.value);
+      consentFeedbackType.value = 'success';
+      consentFeedbackMessage.value = 'Your consent preferences were saved successfully.';
+    } catch (error) {
+      consentFeedbackType.value = 'error';
+      consentFeedbackMessage.value = "We couldn't save your consent preferences. Please try again.";
+    } finally {
+      isConsentSaving.value = false;
+    }
+  }, 450);
+};
+
+watch(profileTabIndex, (index) => {
+  if (profileTabItems[index]?.label === 'Consent Management') {
+    loadConsentFromCrm();
+  }
+});
 
 onMounted(() => {
   syncViewport();
@@ -331,6 +446,20 @@ onBeforeUnmount(() => {
           :on-remove="removePilotCredentialRow"
           :on-reset="resetPilotCredentials"
           :on-save="savePilotCredentials"
+        />
+      </div>
+      <div v-if="profileTabIndex === 5" class="profile-panel">
+        <ProfileConsentManagementSection
+          :consent-draft="consentDraft"
+          :is-loading="isConsentLoading"
+          :has-load-error="hasConsentLoadError"
+          :is-saving="isConsentSaving"
+          :feedback-message="consentFeedbackMessage"
+          :feedback-type="consentFeedbackType"
+          :has-changes="hasConsentChanges"
+          :on-retry-load="retryConsentLoad"
+          :on-save="saveConsentChanges"
+          :on-discard="discardConsentChanges"
         />
       </div>
     </div>
