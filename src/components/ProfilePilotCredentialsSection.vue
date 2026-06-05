@@ -70,8 +70,9 @@ import Calendar from 'primevue/calendar';
 import Dropdown from 'primevue/dropdown';
 import InputText from 'primevue/inputtext';
 
+defineModel('pilotCredentialsDraft', { type: Array, required: true });
+
 defineProps({
-  pilotCredentialsDraft: Array,
   aircraftOptions: Array,
   onAdd: Function,
   onRemove: Function,

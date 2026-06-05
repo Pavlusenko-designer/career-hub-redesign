@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { profileNavigation } from '../profileNavigation';
 import DashboardOverviewView from '../components/DashboardOverviewView.vue';
 import ApplicationsSectionView from '../components/ApplicationsSectionView.vue';
 import InterviewsSectionView from '../components/InterviewsSectionView.vue';
@@ -71,6 +72,27 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes
+});
+
+router.beforeEach((to, from, next) => {
+  if (profileNavigation.isConfirmingLeave) {
+    profileNavigation.isConfirmingLeave = false;
+    next();
+    return;
+  }
+
+  if (
+    from.name === 'Profile' &&
+    to.name !== 'Profile' &&
+    profileNavigation.hasUnsavedChanges
+  ) {
+    profileNavigation.pendingRoute = to.name;
+    profileNavigation.isLeaveDialogVisible = true;
+    next(false);
+    return;
+  }
+
+  next();
 });
 
 export default router;

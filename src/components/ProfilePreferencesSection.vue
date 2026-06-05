@@ -55,8 +55,9 @@ import Chips from 'primevue/chips';
 import InputText from 'primevue/inputtext';
 import SelectButton from 'primevue/selectbutton';
 
+defineModel('preferencesDraft', { type: Object, required: true });
+
 defineProps({
-  preferencesDraft: Object,
   experienceOptions: Array,
   onReset: Function,
   onSave: Function

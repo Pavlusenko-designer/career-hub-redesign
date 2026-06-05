@@ -177,8 +177,9 @@ import InputText from 'primevue/inputtext';
 import RadioButton from 'primevue/radiobutton';
 import SelectButton from 'primevue/selectbutton';
 
+defineModel('availabilityDraft', { type: Object, required: true });
+
 defineProps({
-  availabilityDraft: Object,
   monthOptions: Array,
   fullWeekPrimary: Array,
   fullWeekWeekend: Array,

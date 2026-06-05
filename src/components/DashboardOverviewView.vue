@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
 import AppIcon from './AppIcon.vue';
@@ -7,9 +8,11 @@ import InfoChip from './InfoChip.vue';
 import InterviewCard from './InterviewCard.vue';
 import JobCard from './JobCard.vue';
 import OnboardingWidget from './OnboardingWidget.vue';
+import SearchByResumeDialog from './SearchByResumeDialog.vue';
 import { store } from '../store';
 
 const router = useRouter();
+const isSearchByResumeDialogVisible = ref(false);
 
 const navigateTo = (routeName) => {
   router.push({ name: routeName });
@@ -19,6 +22,10 @@ const viewJobDetails = (job) => {
   // We can either set it in store or navigate to route.
   // Let's use the route for multi-page feel.
   router.push({ name: 'JobDetails', params: { id: job.jobId } });
+};
+
+const onResumeSearchSubmitted = () => {
+  router.push({ name: 'Profile' });
 };
 </script>
 
@@ -73,7 +80,7 @@ const viewJobDetails = (job) => {
             <h2 class="widget-title">Get matched!</h2>
             <p class="widget-text">Upload your resume and see jobs that match your skills and experience.</p>
             <div class="mt-auto">
-              <Button label="Search with CV" severity="primary" style="width: 100%" />
+              <Button label="Search with CV" severity="primary" style="width: 100%" @click="isSearchByResumeDialogVisible = true" />
             </div>
           </div>
         </div>
@@ -152,7 +159,7 @@ const viewJobDetails = (job) => {
           <h2 class="widget-title">Get matched!</h2>
           <p class="widget-text">Upload your resume and see jobs that match your skills and experience.</p>
           <div class="mt-auto">
-            <Button label="Search with CV" severity="primary" style="width: 100%" />
+            <Button label="Search with CV" severity="primary" style="width: 100%" @click="isSearchByResumeDialogVisible = true" />
           </div>
         </div>
       </div>
@@ -175,6 +182,8 @@ const viewJobDetails = (job) => {
         </div>
       </div>
     </div>
+
+    <SearchByResumeDialog v-model:visible="isSearchByResumeDialogVisible" @submit="onResumeSearchSubmitted" />
   </div>
 </template>
 

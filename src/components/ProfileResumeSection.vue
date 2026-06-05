@@ -21,14 +21,12 @@
         </div>
       </div>
 
-      <div v-else class="resume-dropzone" @dragover.prevent @drop.prevent="onResumeDrop">
+      <div v-else class="resume-dropzone" @click="openUploadDialog">
         <i class="pi pi-file-arrow-up resume-dropzone-icon"></i>
         <h3>Drag and drop your resume here</h3>
         <p>PDF, DOC, or DOCX up to 5 MB</p>
-        <Button label="Choose File" icon="pi pi-upload" severity="secondary" outlined @click="openResumePicker" />
+        <Button label="Choose File" icon="pi pi-upload" severity="secondary" outlined @click.stop="openUploadDialog" />
       </div>
-
-      <input ref="resumeInput" type="file" class="hidden-input" accept=".pdf,.doc,.docx" @change="onResumePicked" />
 
       <div class="checkbox-row resume-attach-row">
         <Checkbox v-model="resumeDraft.attachDuringApplication" inputId="attach-resume" :binary="true" />
@@ -52,6 +50,8 @@
       <Button label="Discard Changes" severity="secondary" outlined @click="onReset" />
       <Button label="Save" severity="primary" @click="onSave" />
     </div>
+
+    <UploadResumeDialog v-model:visible="isUploadDialogVisible" @upload="onResumeUploaded" />
   </div>
 </template>
 
@@ -61,41 +61,36 @@ import Button from 'primevue/button';
 import Checkbox from 'primevue/checkbox';
 import Chips from 'primevue/chips';
 import Menu from 'primevue/menu';
+import UploadResumeDialog from './UploadResumeDialog.vue';
 
-const props = defineProps({
-  resumeDraft: Object,
+const resumeDraft = defineModel('resumeDraft', { type: Object, required: true });
+
+defineProps({
   onReset: Function,
   onSave: Function
 });
 
 const resumeMenu = ref(null);
-const resumeInput = ref(null);
+const isUploadDialogVisible = ref(false);
 
-const openResumePicker = () => {
-  resumeInput.value?.click();
+const openUploadDialog = () => {
+  isUploadDialogVisible.value = true;
 };
 
 const setResumeFile = (file) => {
   if (!file) return;
-  props.resumeDraft.fileName = file.name;
-  props.resumeDraft.lastUploaded = 'Uploaded just now';
+  resumeDraft.value.fileName = file.name;
+  resumeDraft.value.lastUploaded = 'Uploaded just now';
 };
 
-const onResumePicked = (event) => {
-  const file = event.target.files?.[0];
-  setResumeFile(file);
-  event.target.value = '';
-};
-
-const onResumeDrop = (event) => {
-  const file = event.dataTransfer?.files?.[0];
+const onResumeUploaded = (file) => {
   setResumeFile(file);
 };
 
 const removeResume = () => {
-  props.resumeDraft.fileName = '';
-  props.resumeDraft.lastUploaded = '';
-  props.resumeDraft.attachDuringApplication = false;
+  resumeDraft.value.fileName = '';
+  resumeDraft.value.lastUploaded = '';
+  resumeDraft.value.attachDuringApplication = false;
 };
 
 const toggleResumeMenu = (event) => {
@@ -103,7 +98,7 @@ const toggleResumeMenu = (event) => {
 };
 
 const resumeMenuItems = [
-  { label: 'Replace resume', icon: 'pi pi-upload', command: () => openResumePicker() },
+  { label: 'Replace resume', icon: 'pi pi-upload', command: () => openUploadDialog() },
   { label: 'Remove resume', icon: 'pi pi-trash', command: () => removeResume() }
 ];
 </script>

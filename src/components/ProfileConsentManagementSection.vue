@@ -127,11 +127,9 @@ import Dialog from 'primevue/dialog';
 import Tag from 'primevue/tag';
 import AppIcon from './AppIcon.vue';
 
+const consentDraft = defineModel('consentDraft', { type: Array, required: true });
+
 const props = defineProps({
-  consentDraft: {
-    type: Array,
-    required: true
-  },
   isLoading: {
     type: Boolean,
     default: false
@@ -177,21 +175,21 @@ const groupedConsents = computed(() => [
   {
     title: 'Profile data',
     headingId: 'consent-profile-data',
-    items: props.consentDraft.filter((consent) => consent.group === 'profile')
+    items: consentDraft.value.filter((consent) => consent.group === 'profile')
   },
   {
     title: 'Communication preferences',
     headingId: 'consent-communication',
-    items: props.consentDraft.filter((consent) => consent.group === 'communication')
+    items: consentDraft.value.filter((consent) => consent.group === 'communication')
   },
   {
     title: 'AI preferences',
     headingId: 'consent-ai',
-    items: props.consentDraft.filter((consent) => consent.group === 'ai')
+    items: consentDraft.value.filter((consent) => consent.group === 'ai')
   }
 ]);
 
-const expiringConsents = computed(() => props.consentDraft.filter((consent) => consent.expiresSoon && consent.agreed));
+const expiringConsents = computed(() => consentDraft.value.filter((consent) => consent.expiresSoon && consent.agreed));
 
 const getStatusLabel = (consent) => {
   if (consent.agreed === true) return 'Agreed';
@@ -199,7 +197,7 @@ const getStatusLabel = (consent) => {
   return 'Consent not provided';
 };
 
-const findConsent = (id) => props.consentDraft.find((consent) => consent.id === id);
+const findConsent = (id) => consentDraft.value.find((consent) => consent.id === id);
 
 const setConsentValue = (id, agreed) => {
   const consent = findConsent(id);

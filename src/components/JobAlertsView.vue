@@ -62,10 +62,21 @@
         <div class="alert-actions-cell">
           <span class="mobile-field-label">Actions</span>
           <Button label="View results" severity="secondary" outlined class="alert-action-button" @click.prevent />
-          <Button label="Delete alert" severity="secondary" outlined class="alert-action-button alert-delete-button" @click.prevent />
+          <Button label="Delete alert" severity="secondary" outlined class="alert-action-button alert-delete-button" @click="requestDeleteAlert(alert)" />
         </div>
       </div>
     </section>
+
+    <AppConfirmDialog
+      v-model:visible="isDeleteDialogVisible"
+      title="Delete job alert"
+      message="Are you sure you want to delete this job alert? You won't receive emails for this search anymore. This action can't be undone."
+      confirm-label="Delete"
+      cancel-label="Cancel"
+      variant="danger"
+      @confirm="confirmDeleteAlert"
+      @cancel="cancelDeleteAlert"
+    />
   </section>
 </template>
 
@@ -74,6 +85,7 @@ import { ref } from 'vue';
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
 import InputText from 'primevue/inputtext';
+import AppConfirmDialog from './AppConfirmDialog.vue';
 import AppIcon from './AppIcon.vue';
 import SectionHero from './SectionHero.vue';
 
@@ -91,6 +103,8 @@ const alerts = ref([
 
 const editingAlertId = ref(null);
 const editingName = ref('');
+const isDeleteDialogVisible = ref(false);
+const pendingDeleteAlertId = ref(null);
 
 const startEdit = (alert) => {
   editingAlertId.value = alert.id;
@@ -112,6 +126,26 @@ const saveAlertName = (alertId) => {
   }
 
   cancelEdit();
+};
+
+const requestDeleteAlert = (alert) => {
+  pendingDeleteAlertId.value = alert.id;
+  isDeleteDialogVisible.value = true;
+};
+
+const confirmDeleteAlert = () => {
+  if (pendingDeleteAlertId.value != null) {
+    alerts.value = alerts.value.filter((alert) => alert.id !== pendingDeleteAlertId.value);
+    if (editingAlertId.value === pendingDeleteAlertId.value) {
+      cancelEdit();
+    }
+  }
+  cancelDeleteAlert();
+};
+
+const cancelDeleteAlert = () => {
+  isDeleteDialogVisible.value = false;
+  pendingDeleteAlertId.value = null;
 };
 </script>
 

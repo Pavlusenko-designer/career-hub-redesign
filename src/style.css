@@ -189,3 +189,20 @@ h1, h2, h3, h4, p {
 .view-all-link i {
   font-size: 12px;
 }
+
+/* App dialog shells (confirm + upload) */
+.app-confirm-dialog .p-dialog-content,
+.upload-resume-dialog .p-dialog-content,
+.search-resume-dialog .p-dialog-content {
+  padding: 0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.app-confirm-dialog .p-dialog,
+.upload-resume-dialog .p-dialog,
+.search-resume-dialog .p-dialog {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(16, 24, 40, 0.14);
+}

@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref, watch, computed } from 'vue';
+import { onBeforeUnmount, onMounted, ref, watch, computed, nextTick } from 'vue';
 import Menu from 'primevue/menu';
 import AppIcon from './AppIcon.vue';
 import SectionHero from './SectionHero.vue';
@@ -9,6 +9,8 @@ import ProfilePreferencesSection from './ProfilePreferencesSection.vue';
 import ProfileAvailabilitySection from './ProfileAvailabilitySection.vue';
 import ProfilePilotCredentialsSection from './ProfilePilotCredentialsSection.vue';
 import ProfileConsentManagementSection from './ProfileConsentManagementSection.vue';
+import AppConfirmDialog from './AppConfirmDialog.vue';
+import { profileNavigation } from '../profileNavigation';
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 
@@ -201,7 +203,7 @@ const moreProfileMenuItems = computed(() => {
   return profileTabItems.slice(2).map((item, index) => ({
     label: item.label,
     command: () => {
-      profileTabIndex.value = index + 2;
+      requestProfileTabChange(index + 2);
     }
   }));
 });
@@ -213,10 +215,6 @@ const toggleMoreProfileMenu = (event) => {
 
 const syncViewport = () => {
   isProfileMobile.value = window.innerWidth <= NAV_BREAKPOINT;
-};
-
-const onProfileTabChange = (index) => {
-  profileTabIndex.value = index;
 };
 
 const getCountryByDialCode = (dialCode) => countryCodeOptions.find((option) => option.dialCode === dialCode);
@@ -305,6 +303,96 @@ const savePilotCredentials = () => { pilotCredentialsSaved.value = clone(pilotCr
 const resetPilotCredentials = () => { pilotCredentialsDraft.value = clone(pilotCredentialsSaved.value); };
 const hasConsentChanges = computed(() => JSON.stringify(consentDraft.value) !== JSON.stringify(consentCrmSnapshot.value));
 
+const isDraftDirty = (draftRef, savedRef) => JSON.stringify(draftRef.value) !== JSON.stringify(savedRef.value);
+
+const createDirtyTracker = (draftRef, savedRef) => {
+  const dirty = ref(false);
+  const sync = () => {
+    dirty.value = isDraftDirty(draftRef, savedRef);
+  };
+
+  watch([draftRef, savedRef], sync, { deep: true });
+  sync();
+
+  return dirty;
+};
+
+const contactDirty = createDirtyTracker(contactDraft, contactSaved);
+const resumeDirty = createDirtyTracker(resumeDraft, resumeSaved);
+const preferencesDirty = createDirtyTracker(preferencesDraft, preferencesSaved);
+const availabilityDirty = createDirtyTracker(availabilityDraft, availabilitySaved);
+const pilotCredentialsDirty = createDirtyTracker(pilotCredentialsDraft, pilotCredentialsSaved);
+const consentDirty = createDirtyTracker(consentDraft, consentCrmSnapshot);
+
+const sectionDirtyFlags = [contactDirty, resumeDirty, preferencesDirty, availabilityDirty, pilotCredentialsDirty, consentDirty];
+
+const hasAnyUnsavedChanges = computed(() => sectionDirtyFlags.some((flag) => flag.value));
+
+const tabHasChanges = (index) => sectionDirtyFlags[index]?.value ?? false;
+
+const discardAllProfileChanges = () => {
+  if (contactDirty.value) resetContact();
+  if (resumeDirty.value) resetResume();
+  if (preferencesDirty.value) resetPreferences();
+  if (availabilityDirty.value) resetAvailability();
+  if (pilotCredentialsDirty.value) resetPilotCredentials();
+  if (consentDirty.value) discardConsentChanges();
+};
+
+watch(hasAnyUnsavedChanges, (value) => {
+  profileNavigation.hasUnsavedChanges = value;
+}, { immediate: true });
+
+const discardCurrentTabChanges = () => {
+  switch (profileTabIndex.value) {
+    case 0: resetContact(); break;
+    case 1: resetResume(); break;
+    case 2: resetPreferences(); break;
+    case 3: resetAvailability(); break;
+    case 4: resetPilotCredentials(); break;
+    case 5: discardConsentChanges(); break;
+    default: break;
+  }
+};
+
+const isUnsavedDialogVisible = ref(false);
+const pendingProfileTabIndex = ref(null);
+
+const requestProfileTabChange = async (index) => {
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+
+  await nextTick();
+
+  if (index === profileTabIndex.value) return;
+
+  if (tabHasChanges(profileTabIndex.value)) {
+    pendingProfileTabIndex.value = index;
+    isUnsavedDialogVisible.value = true;
+    return;
+  }
+
+  profileTabIndex.value = index;
+};
+
+const onProfileTabChange = (index) => {
+  requestProfileTabChange(index);
+};
+
+const confirmDiscardUnsavedChanges = () => {
+  discardCurrentTabChanges();
+  if (pendingProfileTabIndex.value != null) {
+    profileTabIndex.value = pendingProfileTabIndex.value;
+  }
+  closeUnsavedDialog();
+};
+
+const closeUnsavedDialog = () => {
+  isUnsavedDialogVisible.value = false;
+  pendingProfileTabIndex.value = null;
+};
+
 const loadConsentFromCrm = ({ force = false } = {}) => {
   if (isConsentLoading.value || (!force && hasConsentChanges.value)) return;
   isConsentLoading.value = true;
@@ -360,10 +448,16 @@ watch(profileTabIndex, (index) => {
 onMounted(() => {
   syncViewport();
   window.addEventListener('resize', syncViewport);
+  profileNavigation.discardAllChanges = discardAllProfileChanges;
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', syncViewport);
+  profileNavigation.hasUnsavedChanges = false;
+  profileNavigation.discardAllChanges = null;
+  profileNavigation.pendingRoute = null;
+  profileNavigation.isLeaveDialogVisible = false;
+  profileNavigation.isConfirmingLeave = false;
 });
 </script>
 
@@ -410,7 +504,7 @@ onBeforeUnmount(() => {
     <div class="profile-content">
       <div v-if="profileTabIndex === 0" class="profile-panel">
         <ProfileContactSection
-          :contact-draft="contactDraft"
+          v-model:contact-draft="contactDraft"
           :gender-options="genderOptions"
           :country-code-options="countryCodeOptions"
           :get-country-by-dial-code="getCountryByDialCode"
@@ -419,14 +513,14 @@ onBeforeUnmount(() => {
         />
       </div>
       <div v-if="profileTabIndex === 1" class="profile-panel">
-        <ProfileResumeSection :resume-draft="resumeDraft" :on-reset="resetResume" :on-save="saveResume" />
+        <ProfileResumeSection v-model:resume-draft="resumeDraft" :on-reset="resetResume" :on-save="saveResume" />
       </div>
       <div v-if="profileTabIndex === 2" class="profile-panel">
-        <ProfilePreferencesSection :preferences-draft="preferencesDraft" :experience-options="experienceOptions" :on-reset="resetPreferences" :on-save="savePreferences" />
+        <ProfilePreferencesSection v-model:preferences-draft="preferencesDraft" :experience-options="experienceOptions" :on-reset="resetPreferences" :on-save="savePreferences" />
       </div>
       <div v-if="profileTabIndex === 3" class="profile-panel">
         <ProfileAvailabilitySection
-          :availability-draft="availabilityDraft"
+          v-model:availability-draft="availabilityDraft"
           :month-options="monthOptions"
           :full-week-primary="fullWeekPrimary"
           :full-week-weekend="fullWeekWeekend"
@@ -440,7 +534,7 @@ onBeforeUnmount(() => {
       </div>
       <div v-if="profileTabIndex === 4" class="profile-panel">
         <ProfilePilotCredentialsSection
-          :pilot-credentials-draft="pilotCredentialsDraft"
+          v-model:pilot-credentials-draft="pilotCredentialsDraft"
           :aircraft-options="aircraftOptions"
           :on-add="addPilotCredentialRow"
           :on-remove="removePilotCredentialRow"
@@ -450,7 +544,7 @@ onBeforeUnmount(() => {
       </div>
       <div v-if="profileTabIndex === 5" class="profile-panel">
         <ProfileConsentManagementSection
-          :consent-draft="consentDraft"
+          v-model:consent-draft="consentDraft"
           :is-loading="isConsentLoading"
           :has-load-error="hasConsentLoadError"
           :is-saving="isConsentSaving"
@@ -463,6 +557,17 @@ onBeforeUnmount(() => {
         />
       </div>
     </div>
+
+    <AppConfirmDialog
+      v-model:visible="isUnsavedDialogVisible"
+      title="Unsaved changes"
+      message="You have unsaved changes. Are you sure you want to leave without saving?"
+      confirm-label="Discard"
+      cancel-label="Stay"
+      variant="warning"
+      @confirm="confirmDiscardUnsavedChanges"
+      @cancel="closeUnsavedDialog"
+    />
   </section>
 </template>
 

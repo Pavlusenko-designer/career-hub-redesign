@@ -44,12 +44,22 @@
           <p class="settings-description">This action will delete your account and cannot be undone.</p>
         </div>
         <div class="settings-actions">
-          <Button label="Delete your account" severity="secondary" outlined class="danger-action-btn" />
+          <Button label="Delete your account" severity="secondary" outlined class="danger-action-btn" @click="isDeleteAccountDialogVisible = true" />
         </div>
       </section>
     </div>
 
     <LoginOtpDialog v-model:visible="isLoginDialogVisible" />
+
+    <AppConfirmDialog
+      v-model:visible="isDeleteAccountDialogVisible"
+      title="Delete account"
+      message="Are you sure you want to delete your account? This will permanently remove your profile, applications, and saved jobs. This action can't be undone."
+      confirm-label="Delete"
+      cancel-label="Cancel"
+      variant="danger"
+      @confirm="confirmDeleteAccount"
+    />
   </section>
 </template>
 
@@ -57,11 +67,17 @@
 import { ref } from 'vue';
 import Button from 'primevue/button';
 import Checkbox from 'primevue/checkbox';
+import AppConfirmDialog from './AppConfirmDialog.vue';
 import LoginOtpDialog from './LoginOtpDialog.vue';
 import SectionHero from './SectionHero.vue';
 
 const companyUpdates = ref(true);
 const isLoginDialogVisible = ref(false);
+const isDeleteAccountDialogVisible = ref(false);
+
+const confirmDeleteAccount = () => {
+  isDeleteAccountDialogVisible.value = false;
+};
 </script>
 
 <style scoped>

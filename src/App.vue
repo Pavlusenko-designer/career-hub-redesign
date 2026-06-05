@@ -51,6 +51,17 @@
       <router-view />
     </main>
 
+    <AppConfirmDialog
+      v-model:visible="profileNavigation.isLeaveDialogVisible"
+      title="Unsaved changes"
+      message="You have unsaved changes. Are you sure you want to leave without saving?"
+      confirm-label="Discard"
+      cancel-label="Stay"
+      variant="warning"
+      @confirm="confirmLeaveProfile"
+      @cancel="cancelLeaveProfile"
+    />
+
     <div class="state-toggle-btn">
       <Button
         rounded
@@ -73,6 +84,8 @@ import Menu from 'primevue/menu';
 import AppIcon from './components/AppIcon.vue';
 import Button from 'primevue/button';
 import { store } from './store';
+import { profileNavigation } from './profileNavigation';
+import AppConfirmDialog from './components/AppConfirmDialog.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -128,6 +141,25 @@ const moreMenu = ref(null);
 
 const toggleMoreMenu = (event) => {
   moreMenu.value.toggle(event);
+};
+
+const confirmLeaveProfile = () => {
+  profileNavigation.discardAllChanges?.();
+  profileNavigation.hasUnsavedChanges = false;
+
+  const routeName = profileNavigation.pendingRoute;
+  profileNavigation.pendingRoute = null;
+  profileNavigation.isLeaveDialogVisible = false;
+
+  if (routeName) {
+    profileNavigation.isConfirmingLeave = true;
+    router.push({ name: routeName });
+  }
+};
+
+const cancelLeaveProfile = () => {
+  profileNavigation.pendingRoute = null;
+  profileNavigation.isLeaveDialogVisible = false;
 };
 
 const getTabId = (index) => `dashboard-tab-${index}`;

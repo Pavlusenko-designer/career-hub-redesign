@@ -93,8 +93,9 @@ import Dropdown from 'primevue/dropdown';
 import InputMask from 'primevue/inputmask';
 import InputText from 'primevue/inputtext';
 
+const contactDraft = defineModel('contactDraft', { type: Object, required: true });
+
 defineProps({
-  contactDraft: Object,
   genderOptions: Array,
   countryCodeOptions: Array,
   getCountryByDialCode: Function,
